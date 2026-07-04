@@ -1,0 +1,18 @@
+# Claude Code local (machine-specific permission cache)
+.claude/settings.local.json
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+
+# Backups exported by the app (personal student data — never commit)
+seating-backup-*.json
+
+# Archives
+*.zip

@@ -1,0 +1,3590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1d1d1f">
+<title>Seating Chart</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<meta name="apple-mobile-web-app-title" content="Seating">
+<meta name="application-name" content="Seating">
+
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: #f2f2f7;
+  color: #1d1d1f;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Class picker landing */
+.landing {
+  min-height: 100vh;
+  padding: max(40px, env(safe-area-inset-top)) 20px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.landing-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.landing-sub {
+  text-align: center;
+  font-size: 14px;
+  color: #8e8e93;
+  margin-bottom: 36px;
+}
+.class-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border: none;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: transform 0.08s ease;
+}
+.class-btn:active { transform: scale(0.98); }
+.class-btn-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 17px;
+  font-weight: 600;
+}
+.class-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.class-btn-meta {
+  font-size: 13px;
+  color: #8e8e93;
+}
+
+/* App view */
+header {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid #d1d1d6;
+  padding: 10px 14px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  position: sticky; top: 0; z-index: 10;
+}
+.header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.chart-name {
+  font-size: 16px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  margin-top: 2px;
+}
+.chart-meta { font-size: 11px; color: #8e8e93; margin-top: 1px; }
+.class-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 8px; border-radius: 8px;
+  background: #f2f2f7; color: #1d1d1f;
+  cursor: pointer;
+}
+.class-pill .class-dot { width: 8px; height: 8px; }
+.btn {
+  background: #1d1d1f; color: white; border: none; border-radius: 8px;
+  padding: 8px 14px; font-size: 14px; font-weight: 500;
+  cursor: pointer; min-height: 36px; white-space: nowrap;
+}
+.btn.secondary { background: #e5e5ea; color: #1d1d1f; }
+.btn.danger { background: #ff3b30; color: white; }
+.btn.ghost { background: transparent; color: #007aff; padding: 8px; }
+
+.container { padding: 12px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+
+.classroom {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 10px 8px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.back-label, .front-label {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8e8e93;
+  letter-spacing: 3px;
+  padding: 6px 0;
+}
+.back-label { border-bottom: 1px dashed #d1d1d6; margin-bottom: 8px; }
+.front-label { border-top: 2px solid #1d1d1f; margin-top: 8px; color: #1d1d1f; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+}
+.seat {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1.5px solid #c7c7cc;
+  border-radius: 8px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  padding: 2px;
+  cursor: pointer;
+  word-break: break-word;
+  line-height: 1.05;
+  min-height: 44px;
+  transition: transform 0.08s ease;
+}
+.seat:active { transform: scale(0.94); }
+.seat.filled {
+  background: var(--accent, #1d1d1f);
+  color: white;
+  border-color: var(--accent, #1d1d1f);
+}
+.seat.late-flag::after {
+  content: 'L';
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 14px; height: 14px;
+  background: #ff9500;
+  color: white;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid white;
+  line-height: 1;
+}
+.seat.empty-slot { visibility: hidden; pointer-events: none; }
+
+.section {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.section h2 {
+  margin: 0 0 10px 0; font-size: 13px; font-weight: 600;
+  color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  background: #f2f2f7; padding: 7px 12px; border-radius: 16px;
+  font-size: 13px; border: 1px solid transparent;
+  cursor: pointer; min-height: 32px; display: inline-flex; align-items: center;
+}
+.chip:active { background: #e5e5ea; }
+.chip.late {
+  background: #fff4e5; border-color: #ff9500; color: #b35900;
+}
+.chip.absent {
+  background: #ffeaea; border-color: #ff3b30; color: #b91c1c;
+}
+
+/* Modals */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none; align-items: flex-end;
+  z-index: 100;
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: white;
+  width: 100%;
+  border-top-left-radius: 16px; border-top-right-radius: 16px;
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: slideUp 0.22s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e5ea;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-title { font-size: 17px; font-weight: 600; }
+.modal-body { overflow-y: auto; flex: 1; padding: 8px 0; }
+.modal-body.padded { padding: 12px 16px; }
+
+.search-wrap { padding: 8px 16px; }
+.search {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #d1d1d6;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  background: #f2f2f7;
+}
+.search:focus { outline: 2px solid #007aff; outline-offset: -1px; background: white; }
+
+.student-list { list-style: none; padding: 0; margin: 0; }
+.student-list li {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f2f2f7;
+  font-size: 16px;
+  cursor: pointer;
+}
+.student-list li:active { background: #f2f2f7; }
+.student-list .empty-msg { color: #8e8e93; text-align: center; padding: 24px; font-style: italic; }
+
+.action-list { list-style: none; padding: 0; margin: 0; }
+.action-list li {
+  padding: 16px;
+  border-bottom: 1px solid #f2f2f7;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+}
+.action-list li:last-child { border-bottom: none; }
+.action-list li:active { background: #f2f2f7; }
+.action-list li.danger { color: #ff3b30; }
+.action-list li.warn { color: #b35900; }
+
+.saved-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f2f2f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.saved-item-info { flex: 1; min-width: 0; }
+.saved-item-name {
+  font-size: 16px; font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.saved-item-date { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+.saved-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.saved-actions button {
+  background: #f2f2f7; border: none; border-radius: 6px;
+  padding: 8px 10px; font-size: 13px; cursor: pointer;
+}
+.saved-actions .delete-btn { color: #ff3b30; }
+
+.rename-input {
+  width: 100%; padding: 12px; font-size: 16px;
+  border: 1px solid #d1d1d6; border-radius: 8px;
+  font-family: inherit;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  background: #e5e5ea;
+  border-radius: 9px;
+  padding: 2px;
+}
+.tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 7px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.tab.active {
+  background: white;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+/* Check-in view */
+.btn.primary-wide {
+  width: 100%;
+  background: var(--accent, #1d1d1f);
+  color: white;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.sort-note { font-size: 11px; color: #8e8e93; }
+
+.checkin-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid #f2f2f7;
+  cursor: pointer;
+}
+.checkin-row:last-child { border-bottom: none; }
+.checkin-row:active { background: #fafafa; }
+.checkin-row-info { flex: 1; min-width: 0; }
+.checkin-row-name { font-size: 16px; font-weight: 500; }
+.checkin-row-meta { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+.checkin-row-meta.overdue { color: #ff3b30; font-weight: 600; }
+.checkin-row-meta.never { color: #ff9500; font-weight: 600; }
+.checkin-last-mark {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+  background: #f2f2f7; color: #8e8e93;
+}
+.checkin-last-mark.m0 { background: #ffe5e5; color: #c0392b; }
+.checkin-last-mark.m1 { background: #ffe8d6; color: #b35900; }
+.checkin-last-mark.m2 { background: #fff7d6; color: #9a7d00; }
+.checkin-last-mark.m3 { background: #e6f4ea; color: #1e7e34; }
+.checkin-last-mark.m4 { background: #d6f0db; color: #146c2e; }
+.checkin-last-mark.note-only { background: #eef2ff; color: #4a5bd4; font-size: 15px; }
+.checkin-spark { display: flex; gap: 2px; align-items: flex-end; height: 22px; margin-top: 4px; }
+.spark-bar { width: 5px; border-radius: 1px; background: var(--accent, #1d1d1f); opacity: 0.55; }
+
+.seat-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.seat-toolbar .btn { font-size: 13px; padding: 8px 14px; }
+
+/* Roster manager */
+.roster-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f2f2f7;
+}
+.roster-toolbar .btn { font-size: 13px; padding: 8px 12px; }
+.roster-summary {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #8e8e93;
+  border-bottom: 1px solid #f2f2f7;
+}
+.roster-list { list-style: none; padding: 0; margin: 0; }
+.roster-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f2f2f7;
+}
+.roster-list li:last-child { border-bottom: none; }
+.roster-list .student-name { flex: 1; font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roster-list .student-code { font-size: 11px; color: #8e8e93; }
+.roster-list .row-btn {
+  background: #f2f2f7;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #1d1d1f;
+}
+.roster-list .row-btn.danger { color: #ff3b30; }
+.roster-list .empty-msg { color: #8e8e93; padding: 30px 16px; text-align: center; font-style: italic; }
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.swatch {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  outline: 1.5px solid #d1d1d6;
+  cursor: pointer;
+}
+.swatch.selected {
+  outline: 3px solid #1d1d1f;
+  outline-offset: 1px;
+}
+
+.class-add-btn {
+  border: 2px dashed #d1d1d6 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Mark picker */
+.field-label { display: block; font-size: 13px; font-weight: 600; color: #8e8e93; margin-bottom: 8px; }
+.mark-picker { display: flex; gap: 8px; }
+.mark-opt {
+  flex: 1;
+  aspect-ratio: 1;
+  border: 1.5px solid #d1d1d6;
+  background: white;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d1d1f;
+  cursor: pointer;
+}
+.mark-opt.selected {
+  background: var(--accent, #1d1d1f);
+  color: white;
+  border-color: var(--accent, #1d1d1f);
+}
+.note-input {
+  width: 100%; padding: 12px; font-size: 16px;
+  border: 1px solid #d1d1d6; border-radius: 8px;
+  font-family: inherit; resize: vertical;
+}
+
+/* History entries */
+.hist-entry {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f2f2f7;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.hist-mark {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+}
+.hist-mark.m0 { background: #ffe5e5; color: #c0392b; }
+.hist-mark.m1 { background: #ffe8d6; color: #b35900; }
+.hist-mark.m2 { background: #fff7d6; color: #9a7d00; }
+.hist-mark.m3 { background: #e6f4ea; color: #1e7e34; }
+.hist-mark.m4 { background: #d6f0db; color: #146c2e; }
+.hist-mark.note-only { background: #eef2ff; color: #4a5bd4; }
+.hist-body { flex: 1; min-width: 0; }
+.hist-date { font-size: 13px; font-weight: 600; }
+.hist-note { font-size: 14px; color: #444; margin-top: 3px; white-space: pre-wrap; word-break: break-word; }
+.hist-del { background: none; border: none; color: #ff3b30; font-size: 13px; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.hist-empty { padding: 30px 16px; text-align: center; color: #8e8e93; font-style: italic; }
+
+/* Backup banner */
+.backup-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #8a5a00;
+}
+.backup-banner button {
+  background: #ff9500;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Behaviour categories + tones */
+.cat-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.cat-opt {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid #d1d1d6; background: white;
+  border-radius: 10px; padding: 12px 10px;
+  font-size: 14px; font-weight: 600; color: #1d1d1f;
+  cursor: pointer; text-align: left;
+}
+.cat-opt .cat-emoji { font-size: 18px; line-height: 1; }
+.cat-opt.selected { border-color: var(--accent, #1d1d1f); background: #f2f7ff; }
+.cat-opt.tone-negative.selected { border-color: #ff3b30; background: #ffeaea; }
+.cat-opt.tone-positive.selected { border-color: #34c759; background: #e6f4ea; }
+.cat-opt.tone-neutral.selected  { border-color: #007aff; background: #eef4ff; }
+
+.tone-picker { display: flex; gap: 8px; }
+.tone-opt {
+  flex: 1; border: 1.5px solid #d1d1d6; background: white;
+  border-radius: 10px; padding: 10px 6px; font-size: 13px; font-weight: 600;
+  color: #1d1d1f; cursor: pointer;
+}
+.tone-opt.selected[data-tone="negative"] { background: #ffeaea; border-color: #ff3b30; color: #b91c1c; }
+.tone-opt.selected[data-tone="neutral"]  { background: #eef4ff; border-color: #007aff; color: #0040a0; }
+.tone-opt.selected[data-tone="positive"] { background: #e6f4ea; border-color: #34c759; color: #146c2e; }
+
+.beh-badge {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; background: #f2f2f7;
+}
+.beh-badge.tone-negative { background: #ffe5e5; }
+.beh-badge.tone-neutral  { background: #eef2ff; }
+.beh-badge.tone-positive { background: #e6f4ea; }
+.beh-badge.clean { background: #f2f2f7; color: #8e8e93; font-size: 16px; }
+
+.beh-dots { display: flex; gap: 3px; align-items: center; margin-top: 5px; flex-wrap: wrap; }
+.beh-dot { width: 8px; height: 8px; border-radius: 50%; background: #c7c7cc; }
+.beh-dot.tone-negative { background: #ff3b30; }
+.beh-dot.tone-neutral  { background: #007aff; }
+.beh-dot.tone-positive { background: #34c759; }
+
+.checkin-row-meta.clean { color: #34c759; }
+
+.tone-tag {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.tone-tag.tone-negative { background: #ffe5e5; color: #b91c1c; }
+.tone-tag.tone-neutral  { background: #eef2ff; color: #0040a0; }
+.tone-tag.tone-positive { background: #e6f4ea; color: #146c2e; }
+
+.beh-hist-mark {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  background: #f2f2f7;
+}
+.beh-hist-mark.tone-negative { background: #ffe5e5; }
+.beh-hist-mark.tone-neutral  { background: #eef2ff; }
+.beh-hist-mark.tone-positive { background: #e6f4ea; }
+
+/* Room layout editor */
+.layout-cell {
+  aspect-ratio: 1;
+  border: 1.5px dashed #c7c7cc;
+  border-radius: 8px;
+  background: #f7f7fa;
+  min-height: 40px;
+  cursor: pointer;
+  transition: transform 0.06s ease;
+}
+.layout-cell:active { transform: scale(0.92); }
+.layout-cell.on {
+  background: var(--accent, #1d1d1f);
+  border-style: solid;
+  border-color: var(--accent, #1d1d1f);
+}
+
+.toast {
+  position: fixed;
+  top: 80px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85); color: white;
+  padding: 10px 18px; border-radius: 20px;
+  font-size: 14px; z-index: 200;
+  opacity: 0; transition: opacity 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Landing -->
+<div id="landing" class="landing" style="display:none">
+  <div class="landing-title">Seating Charts</div>
+  <div class="landing-sub" id="landingSub">Choose a class</div>
+  <div id="classButtons"></div>
+</div>
+
+<!-- App -->
+<div id="app" style="display:none">
+  <header>
+    <div class="header-row">
+      <div style="flex:1; min-width:0">
+        <div class="class-pill" id="classPill"></div>
+        <div class="chart-name" id="chartName">Today</div>
+        <div class="chart-meta" id="chartMeta"></div>
+      </div>
+      <button class="btn secondary" id="menuBtn">Menu</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tabSeating">Seating</button>
+      <button class="tab" id="tabCheckins">Check-ins</button>
+      <button class="tab" id="tabBehaviours">Behaviour</button>
+    </div>
+  </header>
+
+  <!-- SEATING VIEW -->
+  <div class="container view" id="seatingView">
+    <div class="seat-toolbar">
+      <button class="btn secondary" id="checkinNextBtn">📋 Check in next</button>
+      <button class="btn secondary" id="randomFillBtn">🎲 Randomize seats</button>
+    </div>
+    <div class="classroom">
+      <div class="back-label">BACK</div>
+      <div class="grid" id="grid"></div>
+      <div class="front-label">FRONT (you)</div>
+    </div>
+
+    <div class="section">
+      <h2>Unseated <span id="unseatedCount" style="color:#1d1d1f">(0)</span></h2>
+      <div class="chips" id="unseatedChips"></div>
+    </div>
+
+    <div class="section" id="lateSection" style="display:none">
+      <h2>Late <span id="lateCount" style="color:#1d1d1f">(0)</span></h2>
+      <div class="chips" id="lateChips"></div>
+    </div>
+
+    <div class="section" id="absentSection" style="display:none">
+      <h2>Absent <span id="absentCount" style="color:#1d1d1f">(0)</span></h2>
+      <div class="chips" id="absentChips"></div>
+    </div>
+  </div>
+
+  <!-- CHECK-INS VIEW -->
+  <div class="container view" id="checkinsView" style="display:none">
+    <button class="btn primary-wide" id="newCheckinBtn">+ New check-in</button>
+
+    <div class="backup-banner" id="backupBanner" style="display:none">
+      <span id="backupBannerText"></span>
+      <button id="backupNowBtn">Back up</button>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2 style="margin:0">Students</h2>
+        <span class="sort-note">Most overdue first</span>
+      </div>
+      <div id="checkinRoster"></div>
+    </div>
+  </div>
+
+  <!-- BEHAVIOURS VIEW -->
+  <div class="container view" id="behavioursView" style="display:none">
+    <button class="btn primary-wide" id="newBehaviourBtn">+ Log behaviour</button>
+
+    <div class="backup-banner" id="backupBannerB" style="display:none">
+      <span id="backupBannerTextB"></span>
+      <button id="backupNowBtnB">Back up</button>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2 style="margin:0">Students</h2>
+        <span class="sort-note">Most recent first</span>
+      </div>
+      <div id="behaviourRoster"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Picker -->
+<div class="modal-backdrop" id="pickerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="pickerTitle">Assign seat</div>
+      <button class="btn ghost" id="pickerClose">Cancel</button>
+    </div>
+    <div class="search-wrap">
+      <input type="text" class="search" id="pickerSearch" placeholder="Search students..." autocomplete="off">
+    </div>
+    <div class="modal-body">
+      <ul class="student-list" id="pickerList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Seat action sheet -->
+<div class="modal-backdrop" id="actionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="actionTitle"></div>
+      <button class="btn ghost" id="actionClose">Cancel</button>
+    </div>
+    <div class="modal-body">
+      <ul class="action-list">
+        <li id="actionSwap">Swap with another student</li>
+        <li id="actionBehaviour">📝 Log behaviour…</li>
+        <li id="actionLate" class="warn">Mark late</li>
+        <li id="actionAbsent" class="warn">Mark absent</li>
+        <li id="actionClear" class="danger">Clear seat</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Chip action sheet -->
+<div class="modal-backdrop" id="chipActionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="chipActionTitle"></div>
+      <button class="btn ghost" id="chipActionClose">Cancel</button>
+    </div>
+    <div class="modal-body">
+      <ul class="action-list" id="chipActionList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Menu -->
+<div class="modal-backdrop" id="menuModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Menu</div>
+      <button class="btn ghost" id="menuClose">Cancel</button>
+    </div>
+    <div class="modal-body">
+      <ul class="action-list">
+        <li id="menuRename">Rename current chart</li>
+        <li id="menuSave">Save current chart</li>
+        <li id="menuNew">Start new chart</li>
+        <li id="menuLoad">Load saved chart…</li>
+        <li id="menuExport">Export as PNG</li>
+        <li id="menuSwitchClass">Switch class</li>
+        <li id="menuManageRoster">Manage class & roster…</li>
+        <li id="menuLayout">Edit room layout…</li>
+        <li id="menuBackup">⬇ Back up all data (JSON)</li>
+        <li id="menuRestore">⬆ Restore from backup…</li>
+        <li id="menuCheckinSettings">Check-in settings</li>
+        <li id="menuBehaviourTypes">Behaviour categories</li>
+        <li id="menuReset" class="danger">Clear all seats</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Saved list -->
+<div class="modal-backdrop" id="savedModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Saved charts</div>
+      <button class="btn ghost" id="savedClose">Done</button>
+    </div>
+    <div class="modal-body" id="savedList"></div>
+  </div>
+</div>
+
+<!-- Rename -->
+<div class="modal-backdrop" id="renameModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Rename chart</div>
+      <button class="btn ghost" id="renameCancel">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <input type="text" class="rename-input" id="renameInput" placeholder="Chart name">
+      <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="renameSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Check-in: pick a student -->
+<div class="modal-backdrop" id="checkinPickModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Check in a student</div>
+      <button class="btn ghost" id="checkinPickClose">Cancel</button>
+    </div>
+    <div class="search-wrap">
+      <input type="text" class="search" id="checkinPickSearch" placeholder="Search students..." autocomplete="off">
+    </div>
+    <div class="modal-body">
+      <ul class="student-list" id="checkinPickList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Check-in: enter a mark -->
+<div class="modal-backdrop" id="checkinEntryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="checkinEntryTitle">Check-in</div>
+      <button class="btn ghost" id="checkinEntryClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Mark <span style="font-weight:400;color:#8e8e93">(optional — tap again to clear)</span></label>
+      <div class="mark-picker" id="markPicker">
+        <button class="mark-opt" data-mark="0">0</button>
+        <button class="mark-opt" data-mark="1">1</button>
+        <button class="mark-opt" data-mark="2">2</button>
+        <button class="mark-opt" data-mark="3">3</button>
+        <button class="mark-opt" data-mark="4">4</button>
+      </div>
+      <label class="field-label" style="margin-top:16px">Date</label>
+      <input type="date" class="rename-input" id="checkinDate">
+      <label class="field-label" style="margin-top:16px">Note <span style="font-weight:400;color:#8e8e93">(optional)</span></label>
+      <textarea class="note-input" id="checkinNote" rows="3" placeholder="e.g. strong on factoring, shaky on word problems"></textarea>
+      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="checkinEntrySave">Save check-in</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Check-in: student history -->
+<div class="modal-backdrop" id="historyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="historyTitle">History</div>
+      <button class="btn ghost" id="historyClose">Done</button>
+    </div>
+    <div class="modal-body" id="historyBody"></div>
+    <div style="padding:12px 16px; border-top:1px solid #e5e5ea;">
+      <button class="btn primary-wide" id="historyAddBtn">+ New check-in for this student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Check-in settings -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Check-in settings</div>
+      <button class="btn ghost" id="settingsClose">Done</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Flag students as "overdue" after this many days without a check-in</label>
+      <input type="number" class="rename-input" id="overdueInput" min="1" max="120" step="1">
+      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="settingsSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="restoreInput" accept="application/json,.json" style="display:none">
+<input type="file" id="csvImportInput" accept=".csv,text/csv" style="display:none">
+
+<!-- Manage class & roster -->
+<div class="modal-backdrop" id="rosterModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="rosterTitle">Roster</div>
+      <button class="btn ghost" id="rosterClose">Done</button>
+    </div>
+    <div class="modal-body" id="rosterBody">
+      <div class="roster-toolbar">
+        <button class="btn secondary" id="rosterAddStudent">+ Add student</button>
+        <button class="btn secondary" id="rosterImportCsv">Import CSV</button>
+        <button class="btn secondary" id="rosterClassSettings">Class settings</button>
+      </div>
+      <div class="roster-summary" id="rosterSummary"></div>
+      <ul class="roster-list" id="rosterList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Class settings (rename / recolor / delete class) -->
+<div class="modal-backdrop" id="classSettingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Class settings</div>
+      <button class="btn ghost" id="classSettingsClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Class name</label>
+      <input type="text" class="rename-input" id="classLabelInput" placeholder="e.g. Math 20-1">
+      <label class="field-label" style="margin-top:16px">Color</label>
+      <div class="color-swatches" id="classColorSwatches"></div>
+      <div style="margin-top: 18px; display: flex; gap: 8px; justify-content: space-between; align-items: center;">
+        <button class="btn danger" id="classDeleteBtn">Delete class</button>
+        <button class="btn" id="classSettingsSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / edit student -->
+<div class="modal-backdrop" id="studentEditModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="studentEditTitle">Add student</div>
+      <button class="btn ghost" id="studentEditClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Student name</label>
+      <input type="text" class="rename-input" id="studentNameInput" placeholder="e.g. Alex Smith" autocomplete="off">
+      <label class="field-label" style="margin-top:16px">Student code <span style="font-weight:400;color:#8e8e93" id="studentCodeHint">(optional — leave blank to auto-generate)</span></label>
+      <input type="number" inputmode="numeric" class="rename-input" id="studentCodeInput" placeholder="e.g. 71506" autocomplete="off" min="1" step="1">
+      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="studentEditSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New class -->
+<div class="modal-backdrop" id="newClassModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add a new class</div>
+      <button class="btn ghost" id="newClassClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Class name</label>
+      <input type="text" class="rename-input" id="newClassLabelInput" placeholder="e.g. Math 20-2" autocomplete="off">
+      <label class="field-label" style="margin-top:16px">Color</label>
+      <div class="color-swatches" id="newClassColorSwatches"></div>
+      <p style="font-size:12px; color:#8e8e93; margin-top:14px">You can add students or import a CSV after the class is created.</p>
+      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="newClassCreate">Create class</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Behaviour: pick a student -->
+<div class="modal-backdrop" id="behaviourPickModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Log behaviour</div>
+      <button class="btn ghost" id="behaviourPickClose">Cancel</button>
+    </div>
+    <div class="search-wrap">
+      <input type="text" class="search" id="behaviourPickSearch" placeholder="Search students..." autocomplete="off">
+    </div>
+    <div class="modal-body">
+      <ul class="student-list" id="behaviourPickList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Behaviour: entry (category + date + note) -->
+<div class="modal-backdrop" id="behaviourEntryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="behaviourEntryTitle">Behaviour</div>
+      <button class="btn ghost" id="behaviourEntryClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Category</label>
+      <div class="cat-picker" id="behaviourCatPicker"></div>
+      <label class="field-label" style="margin-top:16px">Date</label>
+      <input type="date" class="rename-input" id="behaviourDate">
+      <label class="field-label" style="margin-top:16px">Note <span style="font-weight:400;color:#8e8e93">(optional)</span></label>
+      <textarea class="note-input" id="behaviourNote" rows="3" placeholder="e.g. third time this week; phone confiscated until end of class"></textarea>
+      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="behaviourEntrySave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Behaviour: quick category pick (from the seat grid) -->
+<div class="modal-backdrop" id="behaviourQuickModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="behaviourQuickTitle">Log behaviour</div>
+      <button class="btn ghost" id="behaviourQuickClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <div class="cat-picker" id="behaviourQuickPicker"></div>
+      <p style="font-size:12px;color:#8e8e93;margin:14px 2px 12px">Tapping a category logs it instantly with today's date.</p>
+      <button class="btn secondary" id="behaviourQuickNote" style="width:100%">✎ Add a note instead…</button>
+    </div>
+  </div>
+</div>
+
+<!-- Behaviour: student history -->
+<div class="modal-backdrop" id="behaviourHistoryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="behaviourHistoryTitle">History</div>
+      <button class="btn ghost" id="behaviourHistoryClose">Done</button>
+    </div>
+    <div class="modal-body" id="behaviourHistoryBody"></div>
+    <div style="padding:12px 16px; border-top:1px solid #e5e5ea;">
+      <button class="btn primary-wide" id="behaviourHistoryAddBtn">+ Log behaviour for this student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Behaviour: category manager -->
+<div class="modal-backdrop" id="behaviourTypesModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Behaviour categories</div>
+      <button class="btn ghost" id="behaviourTypesClose">Done</button>
+    </div>
+    <div class="modal-body" id="behaviourTypesBody">
+      <div class="roster-toolbar">
+        <button class="btn secondary" id="behaviourTypeAdd">+ Add category</button>
+        <button class="btn secondary" id="behaviourTypeReset">Reset to defaults</button>
+      </div>
+      <ul class="roster-list" id="behaviourTypesList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Behaviour: add / edit a category -->
+<div class="modal-backdrop" id="behaviourTypeEditModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="behaviourTypeEditTitle">Add category</div>
+      <button class="btn ghost" id="behaviourTypeEditClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <label class="field-label">Label</label>
+      <input type="text" class="rename-input" id="behaviourTypeLabel" placeholder="e.g. Phone" autocomplete="off">
+      <label class="field-label" style="margin-top:16px">Emoji</label>
+      <input type="text" class="rename-input" id="behaviourTypeEmoji" placeholder="📱" maxlength="4" autocomplete="off">
+      <label class="field-label" style="margin-top:16px">Type</label>
+      <div class="tone-picker" id="behaviourTonePicker">
+        <button class="tone-opt" data-tone="negative">Negative</button>
+        <button class="tone-opt" data-tone="neutral">Neutral</button>
+        <button class="tone-opt" data-tone="positive">Positive</button>
+      </div>
+      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn" id="behaviourTypeEditSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit room layout -->
+<div class="modal-backdrop" id="layoutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit room layout</div>
+      <button class="btn ghost" id="layoutClose">Cancel</button>
+    </div>
+    <div class="modal-body padded">
+      <p style="font-size:13px;color:#8e8e93;margin:0 0 12px">Tap a square to toggle it between a desk and empty space. The grid is fixed at 6 wide × 7 deep; this just sets which slots are real desks. Applies to every class.</p>
+      <div class="back-label">BACK</div>
+      <div class="grid" id="layoutGrid" style="margin:8px 0"></div>
+      <div class="front-label">FRONT (you)</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:10px">
+        <span class="sort-note" id="layoutCount">38 desks</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn secondary" id="layoutReset">Reset to default</button>
+          <button class="btn" id="layoutSave">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Rosters live entirely in localStorage. The app starts with no classes — the user
+// creates them via "+ Add a new class" on the landing screen, or imports a CSV.
+const PALETTE = ['#34c759','#007aff','#af52de','#ff9500','#ff2d55','#5ac8fa','#ffcc00','#5856d6','#00c7be','#ff3b30'];
+
+const COLS = 6, ROWS = 7;
+const LS_LAYOUT = 'seating_layout_v1';   // global desk layout: which of the 6x7 slots are real desks
+
+function allSlotIds() {
+  const ids = [];
+  for (let r = 1; r <= ROWS; r++) for (let c = 1; c <= COLS; c++) ids.push(`r${r}c${c}`);
+  return ids;
+}
+function defaultLayout() {
+  // Original room: full 6x7 minus the four corner cutouts.
+  return allSlotIds().filter(id => {
+    const m = id.match(/r(\d+)c(\d+)/);
+    const r = +m[1], c = +m[2];
+    const empty = (r === 1 && (c === 1 || c === 2)) || (r === ROWS && (c === 1 || c === COLS));
+    return !empty;
+  });
+}
+function loadLayout() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_LAYOUT));
+    if (Array.isArray(v) && v.length) return v.filter(id => /^r\d+c\d+$/.test(id));
+  } catch {}
+  return defaultLayout();
+}
+function saveLayout(ids) {
+  localStorage.setItem(LS_LAYOUT, JSON.stringify(ids));
+}
+// SEATS is the live list of real desks (canonical order). Reassigned when the layout changes.
+let SEATS = loadLayout();
+
+const LS_CURRENT = (cls) => `seating_current_v2_${cls}`;
+const LS_SAVED = (cls) => `seating_saved_v2_${cls}`;
+const LS_ACTIVE = 'seating_active_class_v2';
+const LS_CHECKINS = (cls) => `seating_checkins_v1_${cls}`;
+const LS_SETTINGS = 'seating_settings_v1';
+const LS_LAST_BACKUP = 'seating_last_backup_v1';
+const LS_ROSTER = (cls) => `seating_roster_v1_${cls}`;
+const LS_CLASS_KEYS = 'seating_class_keys_v1';   // ordered list of class keys present
+const LS_BEHAVIOURS = (cls) => `seating_behaviours_v1_${cls}`;   // per-class incident log
+const LS_BEHAVIOUR_TYPES = 'seating_behaviour_types_v1';        // global, editable category list
+
+// Behaviour categories are GLOBAL (shared across all classes) — the same way overdueDays
+// is global while check-ins are per-class. Each: {id, label, emoji, tone}. tone drives color.
+const DEFAULT_BEHAVIOUR_TYPES = [
+  { id: 'phone',    label: 'Phone',          emoji: '📱', tone: 'negative' },
+  { id: 'bathroom', label: 'Long bathroom',  emoji: '🚻', tone: 'negative' },
+  { id: 'offtask',  label: 'Off-task',       emoji: '🗣️', tone: 'negative' },
+  { id: 'called',   label: 'Called home',    emoji: '☎️', tone: 'neutral'  },
+  { id: 'emailed',  label: 'Emailed home',   emoji: '✉️', tone: 'neutral'  },
+  { id: 'office',   label: 'Office referral', emoji: '🏫', tone: 'negative' },
+  { id: 'positive', label: 'Positive',       emoji: '⭐', tone: 'positive' },
+];
+
+// ---- Roster (class) management ----
+
+function loadClassKeys() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_CLASS_KEYS));
+    if (Array.isArray(v)) return v;
+  } catch {}
+  return [];
+}
+
+function saveClassKeys(keys) {
+  localStorage.setItem(LS_CLASS_KEYS, JSON.stringify(keys));
+}
+
+function getClass(key) {
+  if (!key) return null;
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_ROSTER(key)));
+    if (v && Array.isArray(v.students)) return v;
+  } catch {}
+  return null;
+}
+
+function saveClass(key, data) {
+  // Always store students sorted alphabetically
+  const sorted = (data.students || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  localStorage.setItem(LS_ROSTER(key), JSON.stringify({
+    label: data.label,
+    color: data.color,
+    students: sorted,
+  }));
+}
+
+function getAllClassKeys() {
+  return loadClassKeys();
+}
+
+function addClass(key, label, color) {
+  const keys = getAllClassKeys();
+  if (keys.includes(key)) throw new Error('Class key already exists');
+  saveClass(key, { label, color: color || PALETTE[keys.length % PALETTE.length], students: [] });
+  keys.push(key);
+  saveClassKeys(keys);
+}
+
+function deleteClass(key) {
+  const keys = getAllClassKeys().filter(k => k !== key);
+  saveClassKeys(keys);
+  localStorage.removeItem(LS_ROSTER(key));
+  localStorage.removeItem(LS_CURRENT(key));
+  localStorage.removeItem(LS_SAVED(key));
+  localStorage.removeItem(LS_CHECKINS(key));
+  localStorage.removeItem(LS_BEHAVIOURS(key));
+}
+
+function genStudentCode(existingCodes) {
+  // Random 6-digit integer, avoiding collisions within the class
+  const taken = new Set(existingCodes);
+  for (let attempts = 0; attempts < 50; attempts++) {
+    const code = Math.floor(100000 + Math.random() * 900000);
+    if (!taken.has(code)) return code;
+  }
+  return Date.now() % 10000000;
+}
+
+// Add a student to a class. If explicitCode is a positive integer, uses it (after
+// confirming no collision); otherwise auto-generates. Returns {ok, code} or {ok:false, reason}.
+function addStudentToClass(key, name, explicitCode) {
+  const cls = getClass(key);
+  let code;
+  if (explicitCode != null) {
+    if (cls.students.some(s => s.code === explicitCode)) {
+      return { ok: false, reason: 'duplicate' };
+    }
+    code = explicitCode;
+  } else {
+    code = genStudentCode(cls.students.map(s => s.code));
+  }
+  cls.students.push({ code, name: name.trim() });
+  saveClass(key, cls);
+  return { ok: true, code };
+}
+
+function removeStudentFromClass(key, code) {
+  const cls = getClass(key);
+  cls.students = cls.students.filter(s => s.code !== code);
+  saveClass(key, cls);
+  // Hard-delete: also strip any check-ins and current/saved chart references
+  const checkins = loadCheckins(key);
+  if (checkins[code]) {
+    delete checkins[code];
+    localStorage.setItem(LS_CHECKINS(key), JSON.stringify(checkins));
+  }
+  // Behaviours are keyed by code just like check-ins — strip them too
+  const behaviours = loadBehaviours(key);
+  if (behaviours[code]) {
+    delete behaviours[code];
+    localStorage.setItem(LS_BEHAVIOURS(key), JSON.stringify(behaviours));
+  }
+  // Strip from current chart
+  const cur = loadCurrent(key);
+  if (cur) {
+    let changed = false;
+    Object.keys(cur.assignments || {}).forEach(seat => {
+      if (cur.assignments[seat] === code) { delete cur.assignments[seat]; changed = true; }
+    });
+    if ((cur.absent || []).includes(code)) { cur.absent = cur.absent.filter(c => c !== code); changed = true; }
+    if ((cur.late || []).includes(code)) { cur.late = cur.late.filter(c => c !== code); changed = true; }
+    if (changed) localStorage.setItem(LS_CURRENT(key), JSON.stringify(cur));
+  }
+  // Strip from saved charts
+  const saved = loadSaved(key);
+  let savedChanged = false;
+  saved.forEach(snap => {
+    Object.keys(snap.assignments || {}).forEach(seat => {
+      if (snap.assignments[seat] === code) { delete snap.assignments[seat]; savedChanged = true; }
+    });
+    if ((snap.absent || []).includes(code)) { snap.absent = snap.absent.filter(c => c !== code); savedChanged = true; }
+    if ((snap.late || []).includes(code)) { snap.late = snap.late.filter(c => c !== code); savedChanged = true; }
+  });
+  if (savedChanged) writeSaved(key, saved);
+}
+
+function renameStudent(key, code, newName) {
+  const cls = getClass(key);
+  const s = cls.students.find(x => x.code === code);
+  if (s) { s.name = newName.trim(); saveClass(key, cls); }
+}
+
+// Change a student's code. Updates the roster + every place the old code is
+// referenced: current chart's assignments/late/absent, every saved chart, and the
+// check-ins object (which is keyed by code). Returns {ok: true} on success,
+// {ok: false, reason: ...} on collision or missing student.
+function changeStudentCode(key, oldCode, newCode) {
+  if (oldCode === newCode) return { ok: true };
+  const cls = getClass(key);
+  if (!cls) return { ok: false, reason: 'class-missing' };
+  const me = cls.students.find(s => s.code === oldCode);
+  if (!me) return { ok: false, reason: 'student-missing' };
+  if (cls.students.some(s => s.code === newCode)) {
+    return { ok: false, reason: 'duplicate' };
+  }
+  me.code = newCode;
+  saveClass(key, cls);
+
+  // Migrate check-ins (object key)
+  const checkins = loadCheckins(key);
+  if (checkins[oldCode]) {
+    checkins[newCode] = checkins[oldCode];
+    delete checkins[oldCode];
+    localStorage.setItem(LS_CHECKINS(key), JSON.stringify(checkins));
+  }
+
+  // Migrate behaviours (also keyed by code)
+  const behaviours = loadBehaviours(key);
+  if (behaviours[oldCode]) {
+    behaviours[newCode] = behaviours[oldCode];
+    delete behaviours[oldCode];
+    localStorage.setItem(LS_BEHAVIOURS(key), JSON.stringify(behaviours));
+  }
+
+  // Migrate current chart
+  const cur = loadCurrent(key);
+  if (cur) {
+    let changed = false;
+    Object.keys(cur.assignments || {}).forEach(seat => {
+      if (cur.assignments[seat] === oldCode) { cur.assignments[seat] = newCode; changed = true; }
+    });
+    if ((cur.absent || []).includes(oldCode)) {
+      cur.absent = cur.absent.map(c => c === oldCode ? newCode : c); changed = true;
+    }
+    if ((cur.late || []).includes(oldCode)) {
+      cur.late = cur.late.map(c => c === oldCode ? newCode : c); changed = true;
+    }
+    if (changed) localStorage.setItem(LS_CURRENT(key), JSON.stringify(cur));
+  }
+
+  // Migrate every saved chart
+  const saved = loadSaved(key);
+  let savedChanged = false;
+  saved.forEach(snap => {
+    Object.keys(snap.assignments || {}).forEach(seat => {
+      if (snap.assignments[seat] === oldCode) { snap.assignments[seat] = newCode; savedChanged = true; }
+    });
+    if ((snap.absent || []).includes(oldCode)) {
+      snap.absent = snap.absent.map(c => c === oldCode ? newCode : c); savedChanged = true;
+    }
+    if ((snap.late || []).includes(oldCode)) {
+      snap.late = snap.late.map(c => c === oldCode ? newCode : c); savedChanged = true;
+    }
+  });
+  if (savedChanged) writeSaved(key, saved);
+
+  return { ok: true };
+}
+
+function renameClass(key, newLabel) {
+  const cls = getClass(key);
+  if (cls) { cls.label = newLabel; saveClass(key, cls); }
+}
+
+function recolorClass(key, newColor) {
+  const cls = getClass(key);
+  if (cls) { cls.color = newColor; saveClass(key, cls); }
+}
+
+function uid() { return 'c_' + Math.random().toString(36).slice(2, 10); }
+function todayStr() {
+  // Local date (not UTC) so evening check-ins / chart names don't roll to tomorrow.
+  // daysBetween() also builds dates from local parts, so this keeps them in agreement.
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function fmtTime(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
+}
+function daysBetween(dateStr, now) {
+  // dateStr is YYYY-MM-DD; now is a Date. Returns whole days elapsed.
+  const then = new Date(dateStr + 'T00:00:00');
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((today - then) / 86400000);
+}
+function relativeDays(d) {
+  if (d <= 0) return 'today';
+  if (d === 1) return 'yesterday';
+  if (d < 7) return d + ' days ago';
+  if (d < 14) return '1 week ago';
+  if (d < 30) return Math.floor(d / 7) + ' weeks ago';
+  if (d < 60) return '1 month ago';
+  return Math.floor(d / 30) + ' months ago';
+}
+
+function newChart() {
+  return {
+    id: uid(),
+    name: 'Chart ' + todayStr(),
+    createdAt: new Date().toISOString(),
+    lastModified: new Date().toISOString(),
+    assignments: {},
+    absent: [],
+    late: [],
+  };
+}
+
+function nameByCode(code) {
+  const cls = getClass(state.activeClass);
+  if (!cls) return '?';
+  const s = cls.students.find(x => x.code === code);
+  return s ? s.name : '?';
+}
+
+function rosterCodes() {
+  const cls = getClass(state.activeClass);
+  return cls ? cls.students.map(s => s.code) : [];
+}
+
+let state = {
+  activeClass: null,
+  chart: null,
+  pickerTarget: null,
+  actionSeat: null,
+  chipCode: null,
+  activeTab: 'seating',
+  checkins: {},          // code -> [ {id, mark, date, note, createdAt}, ... ]
+  entryCode: null,       // student being checked in
+  entryMark: null,       // selected mark in entry modal
+  behaviours: {},        // code -> [ {id, typeId, date, note, createdAt}, ... ]
+  behaviourEntryCode: null,  // student being logged (entry modal / history)
+  behaviourEntryType: null,  // selected category id in entry modal
+  behaviourQuickCode: null,  // student for the seat-grid quick-pick
+};
+
+// ---- Settings ----
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_SETTINGS)) || {};
+    return { overdueDays: s.overdueDays || 14 };
+  } catch { return { overdueDays: 14 }; }
+}
+function saveSettings(s) {
+  localStorage.setItem(LS_SETTINGS, JSON.stringify(s));
+}
+let settings = loadSettings();
+
+// ---- Behaviour categories (global) ----
+function loadBehaviourTypes() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_BEHAVIOUR_TYPES));
+    if (Array.isArray(v) && v.length) return v;
+  } catch {}
+  return DEFAULT_BEHAVIOUR_TYPES.map(t => ({ ...t }));
+}
+function saveBehaviourTypes(types) {
+  localStorage.setItem(LS_BEHAVIOUR_TYPES, JSON.stringify(types));
+}
+function typeById(id) {
+  // Defensive: a deleted category still has entries pointing at it — render gracefully.
+  return behaviourTypes.find(t => t.id === id) || { id, label: 'Removed category', emoji: '•', tone: 'neutral' };
+}
+function genTypeId(label) {
+  let base = (label || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 20) || 'cat';
+  const existing = new Set(behaviourTypes.map(t => t.id));
+  let id = base, n = 2;
+  while (existing.has(id)) id = `${base}-${n++}`;
+  return id;
+}
+function toneClass(tone) { return 'tone-' + (tone || 'neutral'); }
+let behaviourTypes = loadBehaviourTypes();
+let editingBehaviourTypeId = null;
+let pendingTone = null;
+
+// ---- Behaviour storage (per class, keyed by code like check-ins) ----
+function loadBehaviours(cls) {
+  try { return JSON.parse(localStorage.getItem(LS_BEHAVIOURS(cls))) || {}; } catch { return {}; }
+}
+function persistBehaviours() {
+  localStorage.setItem(LS_BEHAVIOURS(state.activeClass), JSON.stringify(state.behaviours));
+}
+function studentBehaviours(code) {
+  // newest first
+  return (state.behaviours[code] || []).slice().sort((a, b) =>
+    (b.date || '').localeCompare(a.date || '') || (b.createdAt || '').localeCompare(a.createdAt || ''));
+}
+function lastBehaviour(code) {
+  const list = studentBehaviours(code);
+  return list.length ? list[0] : null;
+}
+function totalBehaviourCount() {
+  let n = 0;
+  getAllClassKeys().forEach(cls => {
+    const data = loadBehaviours(cls);
+    Object.values(data).forEach(arr => { n += arr.length; });
+  });
+  return n;
+}
+
+// ---- Check-in storage ----
+function loadCheckins(cls) {
+  try { return JSON.parse(localStorage.getItem(LS_CHECKINS(cls))) || {}; } catch { return {}; }
+}
+function persistCheckins() {
+  localStorage.setItem(LS_CHECKINS(state.activeClass), JSON.stringify(state.checkins));
+}
+function studentCheckins(code) {
+  // newest first
+  return (state.checkins[code] || []).slice().sort((a, b) =>
+    (b.date || '').localeCompare(a.date || '') || (b.createdAt || '').localeCompare(a.createdAt || ''));
+}
+function lastCheckin(code) {
+  const list = studentCheckins(code);
+  return list.length ? list[0] : null;
+}
+
+function loadCurrent(cls) {
+  try {
+    const c = JSON.parse(localStorage.getItem(LS_CURRENT(cls)));
+    if (c && !c.late) c.late = [];
+    return c;
+  } catch { return null; }
+}
+function persistCurrent() {
+  state.chart.lastModified = new Date().toISOString();
+  localStorage.setItem(LS_CURRENT(state.activeClass), JSON.stringify(state.chart));
+}
+function loadSaved(cls) {
+  try { return JSON.parse(localStorage.getItem(LS_SAVED(cls))) || []; } catch { return []; }
+}
+function writeSaved(cls, arr) {
+  localStorage.setItem(LS_SAVED(cls), JSON.stringify(arr));
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+// === Class selection ===
+
+function initApp() {
+  const url = new URL(window.location.href);
+  const urlClass = url.searchParams.get('class');
+  const savedClass = localStorage.getItem(LS_ACTIVE);
+  const startClass = (urlClass && getClass(urlClass)) ? urlClass
+    : (savedClass && getClass(savedClass)) ? savedClass
+    : null;
+
+  if (startClass) enterClass(startClass);
+  else showLanding();
+}
+
+function showLanding() {
+  document.getElementById('landing').style.display = '';
+  document.getElementById('app').style.display = 'none';
+  const container = document.getElementById('classButtons');
+  container.innerHTML = '';
+  const keys = getAllClassKeys();
+  document.getElementById('landingSub').textContent = keys.length === 0
+    ? 'Get started by adding your first class'
+    : 'Choose a class';
+  keys.forEach(key => {
+    const cls = getClass(key);
+    if (!cls) return;
+    const btn = document.createElement('button');
+    btn.className = 'class-btn';
+    const left = document.createElement('div');
+    left.className = 'class-btn-label';
+    const dot = document.createElement('span');
+    dot.className = 'class-dot';
+    dot.style.background = cls.color;
+    const name = document.createElement('span');
+    name.textContent = cls.label;
+    left.appendChild(dot);
+    left.appendChild(name);
+    const meta = document.createElement('div');
+    meta.className = 'class-btn-meta';
+    const savedCount = loadSaved(key).length;
+    meta.textContent = `${cls.students.length} students${savedCount ? ' · ' + savedCount + ' saved' : ''}`;
+    btn.appendChild(left);
+    btn.appendChild(meta);
+    btn.addEventListener('click', () => enterClass(key));
+    container.appendChild(btn);
+  });
+  // Add "+ Add a class" affordance at bottom
+  const addBtn = document.createElement('button');
+  addBtn.className = 'class-btn class-add-btn';
+  addBtn.innerHTML = '<div class="class-btn-label" style="color:#007aff">+ Add a new class</div>';
+  addBtn.addEventListener('click', openNewClassPrompt);
+  container.appendChild(addBtn);
+  // Also surface a Restore button on the landing screen so a fresh-install user can
+  // recover from a backup file without needing to create a class first.
+  const restoreBtn = document.createElement('button');
+  restoreBtn.className = 'class-btn class-add-btn';
+  restoreBtn.style.marginTop = '4px';
+  restoreBtn.innerHTML = '<div class="class-btn-label" style="color:#8e8e93">⬆ Restore from backup</div>';
+  restoreBtn.addEventListener('click', () => document.getElementById('restoreInput').click());
+  container.appendChild(restoreBtn);
+}
+
+function enterClass(cls) {
+  state.activeClass = cls;
+  localStorage.setItem(LS_ACTIVE, cls);
+  const url = new URL(window.location.href);
+  url.searchParams.set('class', cls);
+  window.history.replaceState({}, '', url.toString());
+  const c = getClass(cls);
+  document.documentElement.style.setProperty('--accent', c ? c.color : '#1d1d1f');
+  state.chart = loadCurrent(cls) || newChart();
+  state.checkins = loadCheckins(cls);
+  state.behaviours = loadBehaviours(cls);
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  render();
+}
+
+function switchClass() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('class');
+  window.history.replaceState({}, '', url.toString());
+  localStorage.removeItem(LS_ACTIVE);
+  state.activeClass = null;
+  state.chart = null;
+  state.checkins = {};
+  state.behaviours = {};
+  showLanding();
+}
+
+// === Tabs ===
+function setTab(tab) {
+  state.activeTab = tab;
+  const views = { seating: 'seatingView', checkins: 'checkinsView', behaviours: 'behavioursView' };
+  const tabs  = { seating: 'tabSeating',  checkins: 'tabCheckins',  behaviours: 'tabBehaviours' };
+  Object.entries(views).forEach(([k, id]) => {
+    document.getElementById(id).style.display = (k === tab) ? '' : 'none';
+  });
+  Object.entries(tabs).forEach(([k, id]) => {
+    document.getElementById(id).classList.toggle('active', k === tab);
+  });
+  // Chart name/meta only relevant to seating
+  const seatingOn = tab === 'seating';
+  document.getElementById('chartName').style.display = seatingOn ? '' : 'none';
+  document.getElementById('chartMeta').style.display = seatingOn ? '' : 'none';
+  render();
+}
+
+// === Rendering ===
+
+function render() {
+  if (!state.activeClass || !state.chart) return;
+  renderHeader();
+  if (state.activeTab === 'seating') {
+    renderGrid();
+    renderUnseated();
+    renderLate();
+    renderAbsent();
+  } else if (state.activeTab === 'checkins') {
+    renderCheckinRoster();
+    renderBackupBanner();
+  } else {
+    renderBehaviourRoster();
+    renderBackupBanner();
+  }
+}
+
+function renderHeader() {
+  const cls = getClass(state.activeClass);
+  if (!cls) return;
+  const pill = document.getElementById('classPill');
+  pill.innerHTML = '';
+  const dot = document.createElement('span');
+  dot.className = 'class-dot';
+  dot.style.background = cls.color;
+  pill.appendChild(dot);
+  pill.appendChild(document.createTextNode(cls.label));
+  pill.onclick = switchClass;
+
+  document.getElementById('chartName').textContent = state.chart.name;
+  const seated = Object.values(state.chart.assignments).length;
+  const seatedLate = Object.values(state.chart.assignments).filter(c => state.chart.late.includes(c)).length;
+  const regularUns = regularUnseatedCodes().length;
+  const lateUns = lateUnseatedCodes().length;
+  const absent = state.chart.absent.length;
+  const seatedStr = seatedLate > 0 ? `${seated} seated (${seatedLate} late)` : `${seated} seated`;
+  document.getElementById('chartMeta').textContent =
+    `${seatedStr} · ${regularUns} unseated · ${lateUns} late · ${absent} absent`;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (let r = 1; r <= 7; r++) {
+    for (let c = 1; c <= 6; c++) {
+      const id = `r${r}c${c}`;
+      const div = document.createElement('div');
+      if (!SEATS.includes(id)) {
+        div.className = 'seat empty-slot';
+        grid.appendChild(div);
+        continue;
+      }
+      div.className = 'seat';
+      div.dataset.seat = id;
+      const code = state.chart.assignments[id];
+      if (code != null) {
+        div.classList.add('filled');
+        if (isLate(code)) div.classList.add('late-flag');
+        div.textContent = nameByCode(code);
+      }
+      div.addEventListener('click', () => onSeatTap(id));
+      grid.appendChild(div);
+    }
+  }
+}
+
+function isSeated(code) {
+  return Object.values(state.chart.assignments).includes(code);
+}
+function isLate(code) {
+  return state.chart.late.includes(code);
+}
+function regularUnseatedCodes() {
+  // Not seated, not absent, not late
+  const placed = new Set(Object.values(state.chart.assignments));
+  const absent = new Set(state.chart.absent);
+  const late = new Set(state.chart.late);
+  return rosterCodes().filter(c => !placed.has(c) && !absent.has(c) && !late.has(c));
+}
+function lateUnseatedCodes() {
+  // Late AND not seated (sorted)
+  const placed = new Set(Object.values(state.chart.assignments));
+  return state.chart.late
+    .filter(c => !placed.has(c))
+    .sort((a, b) => nameByCode(a).localeCompare(nameByCode(b)));
+}
+function seatableCodes() {
+  // Not seated, not absent (includes unseated late). Alphabetical (roster is pre-sorted).
+  const placed = new Set(Object.values(state.chart.assignments));
+  const absent = new Set(state.chart.absent);
+  return rosterCodes().filter(c => !placed.has(c) && !absent.has(c));
+}
+
+function renderUnseated() {
+  const codes = regularUnseatedCodes();
+  document.getElementById('unseatedCount').textContent = `(${codes.length})`;
+  const container = document.getElementById('unseatedChips');
+  container.innerHTML = '';
+  if (codes.length === 0) {
+    container.innerHTML = '<span style="color:#8e8e93;font-size:13px">No regular unseated students.</span>';
+    return;
+  }
+  codes.forEach(code => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = nameByCode(code);
+    chip.addEventListener('click', () => onUnseatedChipTap(code));
+    container.appendChild(chip);
+  });
+}
+
+function renderLate() {
+  const codes = lateUnseatedCodes();
+  const section = document.getElementById('lateSection');
+  if (codes.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  document.getElementById('lateCount').textContent = `(${codes.length})`;
+  const container = document.getElementById('lateChips');
+  container.innerHTML = '';
+  codes.forEach(code => {
+    const chip = document.createElement('span');
+    chip.className = 'chip late';
+    chip.textContent = nameByCode(code);
+    chip.addEventListener('click', () => onLateChipTap(code));
+    container.appendChild(chip);
+  });
+}
+
+function renderAbsent() {
+  const codes = [...state.chart.absent].sort((a, b) => nameByCode(a).localeCompare(nameByCode(b)));
+  const section = document.getElementById('absentSection');
+  if (codes.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  document.getElementById('absentCount').textContent = `(${codes.length})`;
+  const container = document.getElementById('absentChips');
+  container.innerHTML = '';
+  codes.forEach(code => {
+    const chip = document.createElement('span');
+    chip.className = 'chip absent';
+    chip.textContent = nameByCode(code);
+    chip.addEventListener('click', () => onAbsentChipTap(code));
+    container.appendChild(chip);
+  });
+}
+
+// === Check-in rendering ===
+
+function markClass(mark) {
+  return 'm' + Math.max(0, Math.min(4, mark));
+}
+function hasMark(entry) {
+  return entry && entry.mark !== null && entry.mark !== undefined;
+}
+function scoredCheckins(code) {
+  // newest-first, only entries that carry a /4 mark
+  return studentCheckins(code).filter(hasMark);
+}
+function lastScored(code) {
+  const s = scoredCheckins(code);
+  return s.length ? s[0] : null;
+}
+
+function renderCheckinRoster() {
+  const container = document.getElementById('checkinRoster');
+  container.innerHTML = '';
+  const now = new Date();
+  const cls = getClass(state.activeClass);
+  if (!cls) return;
+  const students = cls.students.slice();
+
+  // Sort: never-checked first, then most-overdue (largest days) first, then alphabetical.
+  // Recency uses ALL check-ins (a note-only touch-base still counts as "seen").
+  students.sort((a, b) => {
+    const la = lastCheckin(a.code), lb = lastCheckin(b.code);
+    const da = la ? daysBetween(la.date, now) : Infinity;
+    const db = lb ? daysBetween(lb.date, now) : Infinity;
+    if (da !== db) return db - da;       // larger gap (more overdue) first; Infinity (never) on top
+    return a.name.localeCompare(b.name);
+  });
+
+  students.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'checkin-row';
+    row.addEventListener('click', () => openHistory(s.code));
+
+    const last = lastCheckin(s.code);          // most recent entry of any kind
+    const lastMark = lastScored(s.code);       // most recent SCORED entry
+    const list = studentCheckins(s.code);
+    const scored = scoredCheckins(s.code);
+
+    // Badge shows the most recent scored mark; if none scored yet, a note glyph or dash
+    const badge = document.createElement('div');
+    if (lastMark) {
+      badge.className = 'checkin-last-mark ' + markClass(lastMark.mark);
+      badge.textContent = lastMark.mark;
+    } else if (last) {
+      badge.className = 'checkin-last-mark note-only';
+      badge.textContent = '✎';
+    } else {
+      badge.className = 'checkin-last-mark';
+      badge.textContent = '–';
+    }
+
+    const info = document.createElement('div');
+    info.className = 'checkin-row-info';
+    const name = document.createElement('div');
+    name.className = 'checkin-row-name';
+    name.textContent = s.name;
+    info.appendChild(name);
+
+    const meta = document.createElement('div');
+    meta.className = 'checkin-row-meta';
+    if (!last) {
+      meta.classList.add('never');
+      meta.textContent = 'No check-ins yet';
+    } else {
+      const d = daysBetween(last.date, now);
+      const overdue = d >= settings.overdueDays;
+      if (overdue) meta.classList.add('overdue');
+      const count = list.length;
+      const noteCount = count - scored.length;
+      let tail = `${count} check-in${count === 1 ? '' : 's'}`;
+      if (noteCount > 0) tail += ` · ${noteCount} note${noteCount === 1 ? '' : 's'}`;
+      meta.textContent = `Last: ${relativeDays(d)} · ${tail}`;
+    }
+    info.appendChild(meta);
+
+    // Sparkline of recent SCORED marks only (oldest -> newest, up to last 8)
+    if (scored.length > 1) {
+      const spark = document.createElement('div');
+      spark.className = 'checkin-spark';
+      const recent = scored.slice(0, 8).reverse(); // oldest first for left-to-right
+      recent.forEach(c => {
+        const bar = document.createElement('div');
+        bar.className = 'spark-bar';
+        bar.style.height = (4 + (c.mark / 4) * 18) + 'px';
+        spark.appendChild(bar);
+      });
+      info.appendChild(spark);
+    }
+
+    row.appendChild(badge);
+    row.appendChild(info);
+    container.appendChild(row);
+  });
+}
+
+function renderBackupBanner() {
+  const count = totalCheckinCount() + totalBehaviourCount();
+  const last = localStorage.getItem(LS_LAST_BACKUP);
+  let show = false, text = '';
+  if (count > 0) {
+    if (!last) {
+      show = true;
+      text = 'Your tracked data has never been backed up.';
+    } else {
+      const days = Math.floor((Date.now() - Number(last)) / 86400000);
+      if (days >= 7) { show = true; text = `Last backup ${days} day${days === 1 ? '' : 's'} ago.`; }
+    }
+  }
+  // Both the Check-ins and Behaviour views carry a banner.
+  [['backupBanner', 'backupBannerText'], ['backupBannerB', 'backupBannerTextB']].forEach(([bId, tId]) => {
+    const banner = document.getElementById(bId);
+    const txt = document.getElementById(tId);
+    if (!banner) return;
+    banner.style.display = show ? '' : 'none';
+    if (show && txt) txt.textContent = text;
+  });
+}
+
+function totalCheckinCount() {
+  // count across ALL classes for backup awareness
+  let n = 0;
+  getAllClassKeys().forEach(cls => {
+    const data = loadCheckins(cls);
+    Object.values(data).forEach(arr => { n += arr.length; });
+  });
+  return n;
+}
+
+// === Check-in interactions ===
+
+function openCheckinPicker() {
+  document.getElementById('checkinPickSearch').value = '';
+  renderCheckinPickList('');
+  showModal('checkinPickModal');
+  setTimeout(() => document.getElementById('checkinPickSearch').focus(), 100);
+}
+
+function renderCheckinPickList(filter) {
+  const list = document.getElementById('checkinPickList');
+  list.innerHTML = '';
+  const f = filter.toLowerCase().trim();
+  const cls = getClass(state.activeClass);
+  const students = (cls ? cls.students : [])
+    .filter(s => !f || s.name.toLowerCase().includes(f));
+  if (students.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty-msg';
+    li.textContent = 'No matches.';
+    list.appendChild(li);
+    return;
+  }
+  students.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s.name;
+    li.addEventListener('click', () => {
+      hideModal('checkinPickModal');
+      openCheckinEntry(s.code);
+    });
+    list.appendChild(li);
+  });
+}
+
+function openCheckinEntry(code) {
+  state.entryCode = code;
+  state.entryMark = null;
+  document.getElementById('checkinEntryTitle').textContent = 'Check-in: ' + nameByCode(code);
+  document.querySelectorAll('.mark-opt').forEach(b => b.classList.remove('selected'));
+  document.getElementById('checkinDate').value = todayStr();
+  document.getElementById('checkinNote').value = '';
+  showModal('checkinEntryModal');
+}
+
+function saveCheckinEntry() {
+  const note = document.getElementById('checkinNote').value.trim();
+  if (state.entryMark === null && !note) {
+    toast('Add a mark or a note');
+    return;
+  }
+  const code = state.entryCode;
+  const entry = {
+    id: uid(),
+    mark: state.entryMark,   // null = note-only, doesn't count toward average/chart
+    date: document.getElementById('checkinDate').value || todayStr(),
+    note: note,
+    createdAt: new Date().toISOString(),
+  };
+  if (!state.checkins[code]) state.checkins[code] = [];
+  state.checkins[code].push(entry);
+  persistCheckins();
+  hideModal('checkinEntryModal');
+  toast(state.entryMark === null ? 'Note saved' : 'Check-in saved');
+  render();
+  // If we came from the history modal, refresh it
+  if (document.getElementById('historyModal').classList.contains('show')) {
+    renderHistory(code);
+  }
+}
+
+function openHistory(code) {
+  state.entryCode = code;
+  renderHistory(code);
+  showModal('historyModal');
+}
+
+function renderHistory(code) {
+  document.getElementById('historyTitle').textContent = nameByCode(code);
+  const body = document.getElementById('historyBody');
+  body.innerHTML = '';
+  const list = studentCheckins(code);
+  if (list.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'hist-empty';
+    empty.textContent = 'No check-ins yet. Add the first one below.';
+    body.appendChild(empty);
+    return;
+  }
+
+  // Summary line: average over scored entries only
+  const scored = list.filter(hasMark);
+  const summary = document.createElement('div');
+  summary.style.cssText = 'padding:10px 16px; font-size:13px; color:#8e8e93; border-bottom:1px solid #f2f2f7;';
+  const noteCount = list.length - scored.length;
+  let summaryText = `${list.length} check-in${list.length === 1 ? '' : 's'}`;
+  if (scored.length > 0) {
+    const avg = (scored.reduce((s, c) => s + c.mark, 0) / scored.length).toFixed(1);
+    summaryText += ` · average ${avg} / 4`;
+    if (scored.length !== list.length) summaryText += ` (over ${scored.length} scored)`;
+  }
+  if (noteCount > 0 && scored.length === 0) summaryText += ' · notes only';
+  summary.textContent = summaryText;
+  body.appendChild(summary);
+
+  list.forEach(c => {
+    const entry = document.createElement('div');
+    entry.className = 'hist-entry';
+    const mark = document.createElement('div');
+    if (hasMark(c)) {
+      mark.className = 'hist-mark ' + markClass(c.mark);
+      mark.textContent = c.mark;
+    } else {
+      mark.className = 'hist-mark note-only';
+      mark.textContent = '✎';
+    }
+    const b = document.createElement('div');
+    b.className = 'hist-body';
+    const date = document.createElement('div');
+    date.className = 'hist-date';
+    const d = daysBetween(c.date, new Date());
+    date.textContent = c.date + '  (' + relativeDays(d) + ')';
+    b.appendChild(date);
+    if (c.note) {
+      const note = document.createElement('div');
+      note.className = 'hist-note';
+      note.textContent = c.note;
+      b.appendChild(note);
+    }
+    const del = document.createElement('button');
+    del.className = 'hist-del';
+    del.textContent = 'Delete';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!confirm('Delete this entry?')) return;
+      state.checkins[code] = (state.checkins[code] || []).filter(x => x.id !== c.id);
+      if (state.checkins[code].length === 0) delete state.checkins[code];
+      persistCheckins();
+      renderHistory(code);
+      render();
+    });
+    entry.appendChild(mark);
+    entry.appendChild(b);
+    entry.appendChild(del);
+    body.appendChild(entry);
+  });
+}
+
+// === Behaviour rendering ===
+
+function renderBehaviourRoster() {
+  const container = document.getElementById('behaviourRoster');
+  container.innerHTML = '';
+  const now = new Date();
+  const cls = getClass(state.activeClass);
+  if (!cls) return;
+  const students = cls.students.slice();
+
+  // Incident-log inversion (vs check-ins): students WITH incidents sort most-recent-first;
+  // clean students (no incidents) sink to the bottom, alphabetical. Nothing nags you to log.
+  students.sort((a, b) => {
+    const la = lastBehaviour(a.code), lb = lastBehaviour(b.code);
+    if (!la && !lb) return a.name.localeCompare(b.name);
+    if (!la) return 1;   // a is clean -> below b
+    if (!lb) return -1;  // b is clean -> below a
+    const da = daysBetween(la.date, now), db = daysBetween(lb.date, now);
+    if (da !== db) return da - db;   // smaller gap = more recent = higher
+    return a.name.localeCompare(b.name);
+  });
+
+  students.forEach(s => {
+    const list = studentBehaviours(s.code);
+    const last = list.length ? list[0] : null;
+
+    const row = document.createElement('div');
+    row.className = 'checkin-row';
+    row.addEventListener('click', () => openBehaviourHistory(s.code));
+
+    const badge = document.createElement('div');
+    if (last) {
+      const t = typeById(last.typeId);
+      badge.className = 'beh-badge ' + toneClass(t.tone);
+      badge.textContent = t.emoji || '•';
+    } else {
+      badge.className = 'beh-badge clean';
+      badge.textContent = '–';
+    }
+
+    const info = document.createElement('div');
+    info.className = 'checkin-row-info';
+    const name = document.createElement('div');
+    name.className = 'checkin-row-name';
+    name.textContent = s.name;
+    info.appendChild(name);
+
+    const meta = document.createElement('div');
+    meta.className = 'checkin-row-meta';
+    if (!last) {
+      meta.classList.add('clean');
+      meta.textContent = 'No incidents';
+    } else {
+      const d = daysBetween(last.date, now);
+      const count = list.length;
+      meta.textContent = `Last: ${relativeDays(d)} · ${count} log${count === 1 ? '' : 's'}`;
+    }
+    info.appendChild(meta);
+
+    // Tone dots for the recent mix (newest-first, up to 10)
+    if (list.length) {
+      const dots = document.createElement('div');
+      dots.className = 'beh-dots';
+      list.slice(0, 10).forEach(e => {
+        const dot = document.createElement('div');
+        dot.className = 'beh-dot ' + toneClass(typeById(e.typeId).tone);
+        dots.appendChild(dot);
+      });
+      info.appendChild(dots);
+    }
+
+    row.appendChild(badge);
+    row.appendChild(info);
+    container.appendChild(row);
+  });
+}
+
+// Shared category picker. selectedId highlights one; onPick(id) fires on tap.
+function renderCatPicker(containerId, selectedId, onPick) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  if (behaviourTypes.length === 0) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color:#8e8e93;font-size:13px;padding:8px';
+    msg.textContent = 'No categories yet. Add some in Menu → Behaviour categories.';
+    c.appendChild(msg);
+    return;
+  }
+  behaviourTypes.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'cat-opt ' + toneClass(t.tone) + (t.id === selectedId ? ' selected' : '');
+    const em = document.createElement('span');
+    em.className = 'cat-emoji';
+    em.textContent = t.emoji || '•';
+    const lab = document.createElement('span');
+    lab.textContent = t.label;
+    b.appendChild(em);
+    b.appendChild(lab);
+    b.addEventListener('click', () => {
+      c.querySelectorAll('.cat-opt').forEach(el => el.classList.remove('selected'));
+      b.classList.add('selected');
+      if (onPick) onPick(t.id);
+    });
+    c.appendChild(b);
+  });
+}
+
+// === Behaviour interactions ===
+
+function openBehaviourPicker() {
+  document.getElementById('behaviourPickSearch').value = '';
+  renderBehaviourPickList('');
+  showModal('behaviourPickModal');
+  setTimeout(() => document.getElementById('behaviourPickSearch').focus(), 100);
+}
+
+function renderBehaviourPickList(filter) {
+  const list = document.getElementById('behaviourPickList');
+  list.innerHTML = '';
+  const f = filter.toLowerCase().trim();
+  const cls = getClass(state.activeClass);
+  const students = (cls ? cls.students : []).filter(s => !f || s.name.toLowerCase().includes(f));
+  if (students.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty-msg';
+    li.textContent = 'No matches.';
+    list.appendChild(li);
+    return;
+  }
+  students.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s.name;
+    li.addEventListener('click', () => {
+      hideModal('behaviourPickModal');
+      openBehaviourEntry(s.code);
+    });
+    list.appendChild(li);
+  });
+}
+
+function openBehaviourEntry(code) {
+  state.behaviourEntryCode = code;
+  state.behaviourEntryType = null;
+  document.getElementById('behaviourEntryTitle').textContent = 'Behaviour: ' + nameByCode(code);
+  document.getElementById('behaviourDate').value = todayStr();
+  document.getElementById('behaviourNote').value = '';
+  renderCatPicker('behaviourCatPicker', null, (id) => { state.behaviourEntryType = id; });
+  showModal('behaviourEntryModal');
+}
+
+function saveBehaviourEntry() {
+  if (!state.behaviourEntryType) { toast('Pick a category'); return; }
+  const code = state.behaviourEntryCode;
+  const entry = {
+    id: uid(),
+    typeId: state.behaviourEntryType,
+    date: document.getElementById('behaviourDate').value || todayStr(),
+    note: document.getElementById('behaviourNote').value.trim(),
+    createdAt: new Date().toISOString(),
+  };
+  if (!state.behaviours[code]) state.behaviours[code] = [];
+  state.behaviours[code].push(entry);
+  persistBehaviours();
+  hideModal('behaviourEntryModal');
+  toast('Behaviour logged');
+  render();
+  if (document.getElementById('behaviourHistoryModal').classList.contains('show')) {
+    renderBehaviourHistory(code);
+  }
+}
+
+// Seat-grid quick path: tap desk -> action sheet -> Log behaviour -> one category tap = done.
+function openBehaviourQuick(code) {
+  state.behaviourQuickCode = code;
+  document.getElementById('behaviourQuickTitle').textContent = 'Log behaviour: ' + nameByCode(code);
+  renderCatPicker('behaviourQuickPicker', null, (id) => logBehaviourQuick(code, id));
+  showModal('behaviourQuickModal');
+}
+
+function logBehaviourQuick(code, typeId) {
+  const entry = { id: uid(), typeId, date: todayStr(), note: '', createdAt: new Date().toISOString() };
+  if (!state.behaviours[code]) state.behaviours[code] = [];
+  state.behaviours[code].push(entry);
+  persistBehaviours();
+  hideModal('behaviourQuickModal');
+  toast(typeById(typeId).label + ' logged for ' + nameByCode(code));
+  render();
+}
+
+function openBehaviourHistory(code) {
+  state.behaviourEntryCode = code;
+  renderBehaviourHistory(code);
+  showModal('behaviourHistoryModal');
+}
+
+function renderBehaviourHistory(code) {
+  document.getElementById('behaviourHistoryTitle').textContent = nameByCode(code);
+  const body = document.getElementById('behaviourHistoryBody');
+  body.innerHTML = '';
+  const list = studentBehaviours(code);
+  if (list.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'hist-empty';
+    empty.textContent = 'No behaviour logged. Add the first one below.';
+    body.appendChild(empty);
+    return;
+  }
+
+  // Tally header by category
+  const counts = {};
+  list.forEach(e => { counts[e.typeId] = (counts[e.typeId] || 0) + 1; });
+  const summary = document.createElement('div');
+  summary.style.cssText = 'padding:10px 16px; font-size:13px; color:#8e8e93; border-bottom:1px solid #f2f2f7;';
+  const parts = Object.entries(counts).map(([id, n]) => `${n} ${typeById(id).label.toLowerCase()}`);
+  summary.textContent = `${list.length} log${list.length === 1 ? '' : 's'} · ` + parts.join(' · ');
+  body.appendChild(summary);
+
+  list.forEach(e => {
+    const t = typeById(e.typeId);
+    const entry = document.createElement('div');
+    entry.className = 'hist-entry';
+    const mark = document.createElement('div');
+    mark.className = 'beh-hist-mark ' + toneClass(t.tone);
+    mark.textContent = t.emoji || '•';
+    const b = document.createElement('div');
+    b.className = 'hist-body';
+    const date = document.createElement('div');
+    date.className = 'hist-date';
+    const d = daysBetween(e.date, new Date());
+    date.textContent = t.label + ' · ' + e.date + '  (' + relativeDays(d) + ')';
+    b.appendChild(date);
+    if (e.note) {
+      const note = document.createElement('div');
+      note.className = 'hist-note';
+      note.textContent = e.note;
+      b.appendChild(note);
+    }
+    const del = document.createElement('button');
+    del.className = 'hist-del';
+    del.textContent = 'Delete';
+    del.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (!confirm('Delete this entry?')) return;
+      state.behaviours[code] = (state.behaviours[code] || []).filter(x => x.id !== e.id);
+      if (state.behaviours[code].length === 0) delete state.behaviours[code];
+      persistBehaviours();
+      renderBehaviourHistory(code);
+      render();
+    });
+    entry.appendChild(mark);
+    entry.appendChild(b);
+    entry.appendChild(del);
+    body.appendChild(entry);
+  });
+}
+
+// === Behaviour category management ===
+
+function openBehaviourTypes() {
+  renderBehaviourTypesList();
+  showModal('behaviourTypesModal');
+}
+
+function renderBehaviourTypesList() {
+  const list = document.getElementById('behaviourTypesList');
+  list.innerHTML = '';
+  if (behaviourTypes.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty-msg';
+    li.textContent = 'No categories. Add one or reset to defaults.';
+    list.appendChild(li);
+    return;
+  }
+  behaviourTypes.forEach(t => {
+    const li = document.createElement('li');
+    const em = document.createElement('span');
+    em.style.cssText = 'font-size:18px;line-height:1';
+    em.textContent = t.emoji || '•';
+    const name = document.createElement('div');
+    name.className = 'student-name';
+    name.textContent = t.label;
+    const tag = document.createElement('span');
+    tag.className = 'tone-tag ' + toneClass(t.tone);
+    tag.textContent = t.tone;
+    const edit = document.createElement('button');
+    edit.className = 'row-btn';
+    edit.textContent = 'Edit';
+    edit.addEventListener('click', () => openBehaviourTypeEdit(t.id));
+    const del = document.createElement('button');
+    del.className = 'row-btn danger';
+    del.textContent = 'Remove';
+    del.addEventListener('click', () => onRemoveBehaviourType(t));
+    li.appendChild(em);
+    li.appendChild(name);
+    li.appendChild(tag);
+    li.appendChild(edit);
+    li.appendChild(del);
+    list.appendChild(li);
+  });
+}
+
+function onRemoveBehaviourType(t) {
+  // Count logged entries pointing at this type across all classes (kept, not deleted).
+  let used = 0;
+  getAllClassKeys().forEach(cls => {
+    const data = loadBehaviours(cls);
+    Object.values(data).forEach(arr => arr.forEach(e => { if (e.typeId === t.id) used++; }));
+  });
+  const tail = used > 0
+    ? `\n\n${used} logged entr${used === 1 ? 'y' : 'ies'} use this category. They are KEPT (shown as "Removed category"); this only removes it from the picker.`
+    : '';
+  if (!confirm(`Remove "${t.label}" from the category list?${tail}`)) return;
+  behaviourTypes = behaviourTypes.filter(x => x.id !== t.id);
+  saveBehaviourTypes(behaviourTypes);
+  renderBehaviourTypesList();
+  render();
+  toast('Category removed');
+}
+
+function openBehaviourTypeEdit(id) {
+  editingBehaviourTypeId = id || null;
+  const t = id ? typeById(id) : null;
+  document.getElementById('behaviourTypeEditTitle').textContent = id ? 'Edit category' : 'Add category';
+  document.getElementById('behaviourTypeLabel').value = t ? t.label : '';
+  document.getElementById('behaviourTypeEmoji').value = t ? (t.emoji || '') : '';
+  renderTonePicker(t ? t.tone : 'negative');
+  showModal('behaviourTypeEditModal');
+  setTimeout(() => { const i = document.getElementById('behaviourTypeLabel'); i.focus(); i.select(); }, 100);
+}
+
+function renderTonePicker(tone) {
+  pendingTone = tone || 'neutral';
+  document.querySelectorAll('#behaviourTonePicker .tone-opt').forEach(b => {
+    b.classList.toggle('selected', b.dataset.tone === pendingTone);
+  });
+}
+
+function onSaveBehaviourType() {
+  const label = document.getElementById('behaviourTypeLabel').value.trim();
+  if (!label) { toast('Label cannot be empty'); return; }
+  let emoji = document.getElementById('behaviourTypeEmoji').value.trim();
+  if (!emoji) emoji = '•';
+  const tone = pendingTone || 'neutral';
+  if (editingBehaviourTypeId) {
+    const t = behaviourTypes.find(x => x.id === editingBehaviourTypeId);
+    if (t) { t.label = label; t.emoji = emoji; t.tone = tone; }
+  } else {
+    behaviourTypes.push({ id: genTypeId(label), label, emoji, tone });
+  }
+  saveBehaviourTypes(behaviourTypes);
+  hideModal('behaviourTypeEditModal');
+  renderBehaviourTypesList();
+  render();
+  toast('Saved');
+}
+
+function resetBehaviourTypes() {
+  if (!confirm('Reset categories to the default list? Your logged behaviour history is not affected.')) return;
+  behaviourTypes = DEFAULT_BEHAVIOUR_TYPES.map(t => ({ ...t }));
+  saveBehaviourTypes(behaviourTypes);
+  renderBehaviourTypesList();
+  render();
+  toast('Categories reset');
+}
+
+// === Backup / Restore ===
+
+function backupAllData() {
+  const payload = {
+    app: 'seating-chart',
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    settings: settings,
+    behaviourTypes: loadBehaviourTypes(),
+    layout: loadLayout(),
+    classKeys: getAllClassKeys(),
+    classes: {},
+  };
+  getAllClassKeys().forEach(cls => {
+    payload.classes[cls] = {
+      roster: getClass(cls),
+      current: loadCurrent(cls),
+      saved: loadSaved(cls),
+      checkins: loadCheckins(cls),
+      behaviours: loadBehaviours(cls),
+    };
+  });
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  a.download = `seating-backup-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  localStorage.setItem(LS_LAST_BACKUP, String(Date.now()));
+  renderBackupBanner();
+  toast('Backup downloaded');
+}
+
+function restoreFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); }
+    catch { toast('Could not read that file'); return; }
+    if (!data || data.app !== 'seating-chart' || !data.classes) {
+      toast('Not a valid backup file'); return;
+    }
+    const classCount = Object.keys(data.classes).length;
+    if (!confirm(`Restore backup from ${data.exportedAt ? new Date(data.exportedAt).toLocaleString('en-CA') : 'unknown date'}?\n\nThis REPLACES all current classes, rosters, charts, and check-ins (${classCount} class${classCount === 1 ? '' : 'es'}).\n\nConsider backing up first if unsure.`)) {
+      return;
+    }
+    if (data.settings) { settings = { overdueDays: data.settings.overdueDays || 14 }; saveSettings(settings); }
+    // Behaviour categories are global; older (v1) backups won't carry them — leave existing in place.
+    if (Array.isArray(data.behaviourTypes)) { behaviourTypes = data.behaviourTypes; saveBehaviourTypes(behaviourTypes); }
+    // Room layout is global too; tolerant of older backups without it.
+    if (Array.isArray(data.layout) && data.layout.length) { saveLayout(data.layout); SEATS = loadLayout(); }
+
+    if (Array.isArray(data.classKeys)) saveClassKeys(data.classKeys);
+    Object.entries(data.classes).forEach(([cls, blob]) => {
+      if (blob.roster) saveClass(cls, blob.roster);
+      if (blob.current) localStorage.setItem(LS_CURRENT(cls), JSON.stringify(blob.current));
+      if (blob.saved) writeSaved(cls, blob.saved);
+      if (blob.checkins) localStorage.setItem(LS_CHECKINS(cls), JSON.stringify(blob.checkins));
+      if (blob.behaviours) localStorage.setItem(LS_BEHAVIOURS(cls), JSON.stringify(blob.behaviours));
+    });
+    // Reload current class data into memory; if active class was removed, drop back to landing
+    if (state.activeClass && !getClass(state.activeClass)) {
+      state.activeClass = null;
+      state.chart = null;
+      state.checkins = {};
+      state.behaviours = {};
+      localStorage.removeItem(LS_ACTIVE);
+      showLanding();
+      toast('Backup restored');
+      return;
+    }
+    if (state.activeClass) {
+      const c = getClass(state.activeClass);
+      if (c) document.documentElement.style.setProperty('--accent', c.color);
+      state.chart = loadCurrent(state.activeClass) || newChart();
+      state.checkins = loadCheckins(state.activeClass);
+      state.behaviours = loadBehaviours(state.activeClass);
+    }
+    toast('Backup restored');
+    render();
+  };
+  reader.readAsText(file);
+}
+
+// === Roster management UI ===
+
+// Track which class we're managing (lets the modal work from landing or app)
+let rosterContextKey = null;
+let editingStudentCode = null;
+let pendingClassColor = null;
+
+function openRoster(classKey) {
+  rosterContextKey = classKey;
+  const cls = getClass(classKey);
+  document.getElementById('rosterTitle').textContent = cls ? cls.label : 'Roster';
+  renderRosterList();
+  showModal('rosterModal');
+}
+
+function renderRosterList() {
+  const cls = getClass(rosterContextKey);
+  if (!cls) { hideModal('rosterModal'); return; }
+  document.getElementById('rosterTitle').textContent = cls.label;
+  const summary = document.getElementById('rosterSummary');
+  summary.textContent = `${cls.students.length} student${cls.students.length === 1 ? '' : 's'}`;
+  const list = document.getElementById('rosterList');
+  list.innerHTML = '';
+  if (cls.students.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty-msg';
+    li.textContent = 'No students yet. Add some or import a CSV.';
+    list.appendChild(li);
+    return;
+  }
+  cls.students.forEach(s => {
+    const li = document.createElement('li');
+    const name = document.createElement('div');
+    name.className = 'student-name';
+    name.textContent = s.name;
+    const codeSpan = document.createElement('span');
+    codeSpan.className = 'student-code';
+    codeSpan.textContent = '#' + s.code;
+    const editBtn = document.createElement('button');
+    editBtn.className = 'row-btn';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => openStudentEdit(s.code, s.name));
+    const delBtn = document.createElement('button');
+    delBtn.className = 'row-btn danger';
+    delBtn.textContent = 'Remove';
+    delBtn.addEventListener('click', () => onRemoveStudent(s));
+    li.appendChild(name);
+    li.appendChild(codeSpan);
+    li.appendChild(editBtn);
+    li.appendChild(delBtn);
+    list.appendChild(li);
+  });
+}
+
+function onRemoveStudent(s) {
+  // Count their data so the warning is concrete
+  const checkins = (loadCheckins(rosterContextKey)[s.code] || []).length;
+  const cur = loadCurrent(rosterContextKey) || {};
+  const seated = Object.values(cur.assignments || {}).includes(s.code);
+  const flagged = (cur.absent || []).includes(s.code) || (cur.late || []).includes(s.code);
+  const parts = [];
+  if (checkins > 0) parts.push(`${checkins} check-in${checkins === 1 ? '' : 's'}`);
+  if (seated) parts.push('a current seat assignment');
+  if (flagged) parts.push('a late/absent flag');
+  const tail = parts.length ? `\n\nThis will PERMANENTLY DELETE: ${parts.join(', ')}.` : '';
+  const msg = `Remove ${s.name} from this class?${tail}\n\nThis cannot be undone.`;
+  if (!confirm(msg)) return;
+  // Second confirm if they have check-ins
+  if (checkins > 0 && !confirm(`Really delete ${checkins} check-in${checkins === 1 ? '' : 's'} for ${s.name}? Type-of-no-undo confirmation.`)) return;
+  removeStudentFromClass(rosterContextKey, s.code);
+  // If active class is the one being edited, refresh in-memory state
+  if (state.activeClass === rosterContextKey) {
+    state.chart = loadCurrent(rosterContextKey) || newChart();
+    state.checkins = loadCheckins(rosterContextKey);
+    state.behaviours = loadBehaviours(rosterContextKey);
+  }
+  renderRosterList();
+  render();
+  toast('Student removed');
+}
+
+function openStudentEdit(code, name) {
+  editingStudentCode = code;
+  document.getElementById('studentEditTitle').textContent = code ? 'Edit student' : 'Add student';
+  document.getElementById('studentNameInput').value = name || '';
+  const codeInput = document.getElementById('studentCodeInput');
+  const hint = document.getElementById('studentCodeHint');
+  if (code) {
+    codeInput.value = code;
+    hint.textContent = '(change with care — updates all references)';
+  } else {
+    codeInput.value = '';
+    hint.textContent = '(optional — leave blank to auto-generate)';
+  }
+  showModal('studentEditModal');
+  setTimeout(() => {
+    const inp = document.getElementById('studentNameInput');
+    inp.focus(); inp.select();
+  }, 100);
+}
+
+function onSaveStudentEdit() {
+  const name = document.getElementById('studentNameInput').value.trim();
+  if (!name) { toast('Name cannot be empty'); return; }
+
+  // Parse code field — empty means auto-generate (on add) or unchanged (on edit)
+  const codeRaw = document.getElementById('studentCodeInput').value.trim();
+  let codeNum = null;
+  if (codeRaw !== '') {
+    codeNum = parseInt(codeRaw, 10);
+    if (isNaN(codeNum) || codeNum < 1) {
+      toast('Code must be a positive integer');
+      return;
+    }
+  }
+
+  if (editingStudentCode) {
+    // Edit existing: name change is always allowed; code change must not collide
+    renameStudent(rosterContextKey, editingStudentCode, name);
+    if (codeNum != null && codeNum !== editingStudentCode) {
+      const result = changeStudentCode(rosterContextKey, editingStudentCode, codeNum);
+      if (!result.ok) {
+        if (result.reason === 'duplicate') {
+          toast(`Code ${codeNum} is already taken in this class`);
+        } else {
+          toast('Could not change code');
+        }
+        return; // keep modal open so user can fix the code
+      }
+    }
+  } else {
+    // Add new
+    const result = addStudentToClass(rosterContextKey, name, codeNum);
+    if (!result.ok) {
+      if (result.reason === 'duplicate') {
+        toast(`Code ${codeNum} is already taken in this class`);
+      } else {
+        toast('Could not add student');
+      }
+      return; // keep modal open
+    }
+  }
+  // refresh in-memory state for active class
+  if (state.activeClass === rosterContextKey) {
+    state.chart = loadCurrent(rosterContextKey) || state.chart;
+    state.checkins = loadCheckins(rosterContextKey);
+    state.behaviours = loadBehaviours(rosterContextKey);
+  }
+  hideModal('studentEditModal');
+  renderRosterList();
+  render();
+  toast(editingStudentCode ? 'Saved' : 'Student added');
+}
+
+function renderColorSwatches(containerId, currentColor, onPick) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  pendingClassColor = currentColor;
+  PALETTE.forEach(col => {
+    const s = document.createElement('div');
+    s.className = 'swatch' + (col === currentColor ? ' selected' : '');
+    s.style.background = col;
+    s.addEventListener('click', () => {
+      pendingClassColor = col;
+      c.querySelectorAll('.swatch').forEach(el => el.classList.remove('selected'));
+      s.classList.add('selected');
+      if (onPick) onPick(col);
+    });
+    c.appendChild(s);
+  });
+}
+
+function openClassSettings() {
+  const cls = getClass(rosterContextKey);
+  if (!cls) return;
+  document.getElementById('classLabelInput').value = cls.label;
+  renderColorSwatches('classColorSwatches', cls.color);
+  showModal('classSettingsModal');
+}
+
+function onSaveClassSettings() {
+  const label = document.getElementById('classLabelInput').value.trim();
+  if (!label) { toast('Class name cannot be empty'); return; }
+  renameClass(rosterContextKey, label);
+  if (pendingClassColor) recolorClass(rosterContextKey, pendingClassColor);
+  // refresh active class accent if relevant
+  if (state.activeClass === rosterContextKey) {
+    const c = getClass(rosterContextKey);
+    if (c) document.documentElement.style.setProperty('--accent', c.color);
+  }
+  hideModal('classSettingsModal');
+  renderRosterList();
+  render();
+  toast('Class updated');
+}
+
+function onDeleteClass() {
+  const cls = getClass(rosterContextKey);
+  if (!cls) return;
+  const checkinCount = Object.values(loadCheckins(rosterContextKey)).reduce((n, arr) => n + arr.length, 0);
+  const savedCount = loadSaved(rosterContextKey).length;
+  const tail = `\n\nThis will PERMANENTLY DELETE the class along with:\n  • ${cls.students.length} student${cls.students.length === 1 ? '' : 's'}\n  • ${checkinCount} check-in${checkinCount === 1 ? '' : 's'}\n  • ${savedCount} saved chart${savedCount === 1 ? '' : 's'}\n\nThis cannot be undone.`;
+  if (!confirm(`Delete "${cls.label}"?${tail}`)) return;
+  if (!confirm(`Are you absolutely sure? Type-of-no-undo confirmation.`)) return;
+  const wasActive = state.activeClass === rosterContextKey;
+  deleteClass(rosterContextKey);
+  hideModal('classSettingsModal');
+  hideModal('rosterModal');
+  if (wasActive) {
+    state.activeClass = null;
+    state.chart = null;
+    state.checkins = {};
+    localStorage.removeItem(LS_ACTIVE);
+  }
+  // Always refresh landing — it may already be visible (deleted from landing flow),
+  // or we may be transitioning back to it (deleted while inside the class).
+  showLanding();
+  toast('Class deleted');
+}
+
+function openNewClassPrompt() {
+  document.getElementById('newClassLabelInput').value = '';
+  const defaultColor = PALETTE[getAllClassKeys().length % PALETTE.length];
+  renderColorSwatches('newClassColorSwatches', defaultColor);
+  showModal('newClassModal');
+  setTimeout(() => document.getElementById('newClassLabelInput').focus(), 100);
+}
+
+function onCreateNewClass() {
+  const label = document.getElementById('newClassLabelInput').value.trim();
+  if (!label) { toast('Class name cannot be empty'); return; }
+  // Generate a key from the label, ensure uniqueness
+  let baseKey = label.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
+  if (!baseKey) baseKey = 'class';
+  let key = baseKey;
+  const existing = new Set(getAllClassKeys());
+  let n = 2;
+  while (existing.has(key)) { key = `${baseKey}-${n++}`; }
+  try {
+    addClass(key, label, pendingClassColor);
+  } catch (e) {
+    toast('Could not create class'); return;
+  }
+  hideModal('newClassModal');
+  toast('Class created');
+  // If user was on landing, refresh it; otherwise just toast
+  if (!state.activeClass) showLanding();
+  // Open the roster manager for the new class for convenience
+  openRoster(key);
+}
+
+// CSV import
+function onImportCsv(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = String(reader.result || '');
+    const parsed = parseRosterCsv(text);
+    if (!parsed.rows.length) { toast('No students found in CSV'); return; }
+    const errors = parsed.errors;
+    const cls = getClass(rosterContextKey);
+    const existingCodes = new Set(cls.students.map(s => s.code));
+    // Resolve codes (auto-generate if missing/duplicate)
+    let added = 0, skipped = 0, generated = 0;
+    parsed.rows.forEach(r => {
+      let code = r.code;
+      if (code == null || existingCodes.has(code)) {
+        code = genStudentCode(Array.from(existingCodes));
+        generated++;
+      }
+      existingCodes.add(code);
+      cls.students.push({ code, name: r.name });
+      added++;
+    });
+    saveClass(rosterContextKey, cls);
+    if (state.activeClass === rosterContextKey) {
+      state.chart = loadCurrent(rosterContextKey) || state.chart;
+    }
+    renderRosterList();
+    render();
+    let msg = `Imported ${added} student${added === 1 ? '' : 's'}`;
+    if (generated > 0) msg += ` (${generated} auto-coded)`;
+    if (errors.length > 0) msg += `; ${errors.length} row${errors.length === 1 ? '' : 's'} skipped`;
+    toast(msg);
+  };
+  reader.readAsText(file);
+}
+
+function parseRosterCsv(text) {
+  // Tolerant CSV reader: header with 'name' (required) and optional 'student_code' or 'code'
+  const errors = [];
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter(l => l.trim().length > 0);
+  if (lines.length === 0) return { rows: [], errors };
+  // Split using simple comma split; handle basic quoted fields
+  function splitLine(line) {
+    const out = [];
+    let cur = '';
+    let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; } else { inQ = false; }
+        } else cur += ch;
+      } else {
+        if (ch === ',') { out.push(cur); cur = ''; }
+        else if (ch === '"') inQ = true;
+        else cur += ch;
+      }
+    }
+    out.push(cur);
+    return out.map(s => s.trim());
+  }
+  const headerCells = splitLine(lines[0]).map(s => s.toLowerCase());
+  let nameIdx = headerCells.findIndex(h => h === 'name' || h === 'student' || h === 'student_name');
+  let codeIdx = headerCells.findIndex(h => h === 'code' || h === 'student_code' || h === 'id' || h === 'student_id');
+  let startIdx = 1;
+  if (nameIdx === -1) {
+    // No header: assume single column of names, or code,name
+    if (headerCells.length === 1) { nameIdx = 0; startIdx = 0; }
+    else if (headerCells.length === 2) { codeIdx = 0; nameIdx = 1; startIdx = 0; }
+    else { errors.push('Could not find a name column'); return { rows: [], errors }; }
+  }
+  const rows = [];
+  for (let i = startIdx; i < lines.length; i++) {
+    const cells = splitLine(lines[i]);
+    const name = (cells[nameIdx] || '').trim();
+    if (!name) { errors.push(`Row ${i + 1}: empty name`); continue; }
+    let code = null;
+    if (codeIdx !== -1) {
+      const raw = (cells[codeIdx] || '').trim();
+      if (raw) {
+        const n = parseInt(raw, 10);
+        if (!isNaN(n)) code = n;
+      }
+    }
+    rows.push({ name, code });
+  }
+  return { rows, errors };
+}
+
+// === Room layout editor ===
+
+let layoutDraft = null; // Set of active desk ids while editing
+
+function openLayoutEditor() {
+  layoutDraft = new Set(SEATS);
+  renderLayoutEditor();
+  showModal('layoutModal');
+}
+
+function renderLayoutEditor() {
+  const grid = document.getElementById('layoutGrid');
+  grid.innerHTML = '';
+  for (let r = 1; r <= ROWS; r++) {
+    for (let c = 1; c <= COLS; c++) {
+      const id = `r${r}c${c}`;
+      const cell = document.createElement('div');
+      cell.className = 'layout-cell' + (layoutDraft.has(id) ? ' on' : '');
+      cell.addEventListener('click', () => {
+        if (layoutDraft.has(id)) layoutDraft.delete(id); else layoutDraft.add(id);
+        cell.classList.toggle('on');
+        updateLayoutCount();
+      });
+      grid.appendChild(cell);
+    }
+  }
+  updateLayoutCount();
+}
+
+function updateLayoutCount() {
+  const n = layoutDraft.size;
+  document.getElementById('layoutCount').textContent = `${n} desk${n === 1 ? '' : 's'}`;
+}
+
+function saveLayoutEdits() {
+  if (layoutDraft.size === 0) { toast('Keep at least one desk'); return; }
+  const ids = allSlotIds().filter(id => layoutDraft.has(id)); // canonical order
+  saveLayout(ids);
+  SEATS = ids;
+  // Clean the current chart: a student sitting at a desk that no longer exists is
+  // dropped back to unseated (their code stays in the roster, late/absent untouched).
+  if (state.chart) {
+    let changed = false;
+    Object.keys(state.chart.assignments).forEach(seat => {
+      if (!SEATS.includes(seat)) { delete state.chart.assignments[seat]; changed = true; }
+    });
+    if (changed) persistCurrent();
+  }
+  hideModal('layoutModal');
+  render();
+  toast('Room layout saved');
+}
+
+function resetLayoutEdits() {
+  layoutDraft = new Set(defaultLayout());
+  renderLayoutEditor();
+}
+
+// === Interactions ===
+
+// Front-first seat order: front row (row 7, closest to teacher) first, up to back (row 1).
+// Left-to-right within each row.
+function frontFirstSeats() {
+  const ordered = [];
+  for (let r = 7; r >= 1; r--) {
+    for (let c = 1; c <= 6; c++) {
+      const id = `r${r}c${c}`;
+      if (SEATS.includes(id)) ordered.push(id);
+    }
+  }
+  return ordered;
+}
+
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function randomFill() {
+  const hasAssignments = Object.keys(state.chart.assignments).length > 0;
+  if (hasAssignments && !confirm('Randomly reseat everyone? This replaces the current seating arrangement (front rows fill first).')) {
+    return;
+  }
+  // Place every present (non-absent) student. Late flags are kept (stored separately).
+  const placeable = shuffled(rosterCodes().filter(c => !state.chart.absent.includes(c)));
+  const seats = frontFirstSeats();
+  state.chart.assignments = {};
+  placeable.forEach((code, i) => {
+    if (i < seats.length) state.chart.assignments[seats[i]] = code;
+  });
+  const leftover = placeable.length - seats.length;
+  persistCurrent();
+  render();
+  if (leftover > 0) {
+    toast(`Seated ${seats.length}; ${leftover} couldn't fit`);
+  } else {
+    toast(`Seated ${placeable.length} student${placeable.length === 1 ? '' : 's'}`);
+  }
+}
+
+// Pick the student we've gone longest without checking in with. Never-checked-in
+// students win (treated as infinitely overdue); ties are broken at random. Uses ALL
+// check-ins for recency (a note-only touch-base still counts as "seen"), matching the
+// Check-ins roster sort.
+function pickOverdueCheckinCode() {
+  const cls = getClass(state.activeClass);
+  if (!cls || cls.students.length === 0) return null;
+  const now = new Date();
+  let best = -1, pool = [];
+  cls.students.forEach(s => {
+    const last = lastCheckin(s.code);
+    const d = last ? daysBetween(last.date, now) : Infinity;
+    if (d > best) { best = d; pool = [s.code]; }
+    else if (d === best) { pool.push(s.code); }
+  });
+  if (pool.length === 0) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function startOverdueCheckin() {
+  const cls = getClass(state.activeClass);
+  if (!cls || cls.students.length === 0) { toast('No students in this class'); return; }
+  const code = pickOverdueCheckinCode();
+  if (code == null) { toast('No students to check in'); return; }
+  openCheckinEntry(code);
+}
+
+function onSeatTap(seatId) {
+  const code = state.chart.assignments[seatId];
+  if (code == null) openPicker(seatId);
+  else openSeatAction(seatId);
+}
+
+function openPicker(seatId) {
+  state.pickerTarget = seatId;
+  document.getElementById('pickerTitle').textContent = 'Assign student';
+  document.getElementById('pickerSearch').value = '';
+  renderPickerList('');
+  showModal('pickerModal');
+  setTimeout(() => document.getElementById('pickerSearch').focus(), 100);
+}
+
+function renderPickerList(filter) {
+  const list = document.getElementById('pickerList');
+  list.innerHTML = '';
+  const f = filter.toLowerCase().trim();
+  const codes = seatableCodes().filter(code => !f || nameByCode(code).toLowerCase().includes(f));
+  if (codes.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty-msg';
+    li.textContent = f ? 'No matches.' : 'No students available to seat.';
+    list.appendChild(li);
+    return;
+  }
+  codes.forEach(code => {
+    const li = document.createElement('li');
+    li.style.display = 'flex';
+    li.style.justifyContent = 'space-between';
+    li.style.alignItems = 'center';
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = nameByCode(code);
+    li.appendChild(nameSpan);
+    if (isLate(code)) {
+      const badge = document.createElement('span');
+      badge.textContent = 'LATE';
+      badge.style.cssText = 'color:#b35900;background:#fff4e5;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;border:1px solid #ffb340;letter-spacing:0.5px;';
+      li.appendChild(badge);
+    }
+    li.addEventListener('click', () => pickStudent(code));
+    list.appendChild(li);
+  });
+}
+
+function pickStudent(code) {
+  if (state.pickerTarget) state.chart.assignments[state.pickerTarget] = code;
+  persistCurrent();
+  hideModal('pickerModal');
+  render();
+}
+
+function openSeatAction(seatId) {
+  state.actionSeat = seatId;
+  const code = state.chart.assignments[seatId];
+  document.getElementById('actionTitle').textContent = nameByCode(code);
+  document.getElementById('actionLate').textContent =
+    isLate(code) ? 'Remove late flag' : 'Mark as late';
+  showModal('actionModal');
+}
+
+document.getElementById('actionSwap').addEventListener('click', () => {
+  const seatId = state.actionSeat;
+  delete state.chart.assignments[seatId];
+  persistCurrent();
+  hideModal('actionModal');
+  render();
+  openPicker(seatId);
+});
+
+document.getElementById('actionLate').addEventListener('click', () => {
+  const seatId = state.actionSeat;
+  const code = state.chart.assignments[seatId];
+  // Toggle late flag; keep student seated
+  if (isLate(code)) {
+    state.chart.late = state.chart.late.filter(c => c !== code);
+  } else {
+    state.chart.late.push(code);
+  }
+  persistCurrent();
+  hideModal('actionModal');
+  render();
+});
+
+document.getElementById('actionAbsent').addEventListener('click', () => {
+  const seatId = state.actionSeat;
+  const code = state.chart.assignments[seatId];
+  delete state.chart.assignments[seatId];
+  // Absent and late are mutually exclusive
+  state.chart.late = state.chart.late.filter(c => c !== code);
+  if (!state.chart.absent.includes(code)) state.chart.absent.push(code);
+  persistCurrent();
+  hideModal('actionModal');
+  render();
+});
+
+document.getElementById('actionClear').addEventListener('click', () => {
+  delete state.chart.assignments[state.actionSeat];
+  persistCurrent();
+  hideModal('actionModal');
+  render();
+});
+
+function buildChipActions(code, actions) {
+  state.chipCode = code;
+  document.getElementById('chipActionTitle').textContent = nameByCode(code);
+  const list = document.getElementById('chipActionList');
+  list.innerHTML = '';
+  actions.forEach(a => {
+    const li = document.createElement('li');
+    li.textContent = a.label;
+    if (a.cls) li.className = a.cls;
+    li.addEventListener('click', () => {
+      a.fn();
+      persistCurrent();
+      hideModal('chipActionModal');
+      render();
+    });
+    list.appendChild(li);
+  });
+  showModal('chipActionModal');
+}
+
+function onUnseatedChipTap(code) {
+  buildChipActions(code, [
+    { label: 'Mark late', cls: 'warn', fn: () => state.chart.late.push(code) },
+    { label: 'Mark absent', cls: 'warn', fn: () => state.chart.absent.push(code) },
+  ]);
+}
+
+function onLateChipTap(code) {
+  buildChipActions(code, [
+    { label: 'Move to unseated', fn: () => { state.chart.late = state.chart.late.filter(c => c !== code); } },
+    { label: 'Mark absent instead', cls: 'warn', fn: () => {
+      state.chart.late = state.chart.late.filter(c => c !== code);
+      state.chart.absent.push(code);
+    } },
+  ]);
+}
+
+function onAbsentChipTap(code) {
+  buildChipActions(code, [
+    { label: 'Move to unseated', fn: () => { state.chart.absent = state.chart.absent.filter(c => c !== code); } },
+    { label: 'Mark late instead', cls: 'warn', fn: () => {
+      state.chart.absent = state.chart.absent.filter(c => c !== code);
+      state.chart.late.push(code);
+    } },
+  ]);
+}
+
+// === Modal helpers ===
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', (e) => { if (e.target === el) el.classList.remove('show'); });
+});
+
+document.getElementById('pickerClose').addEventListener('click', () => hideModal('pickerModal'));
+document.getElementById('actionClose').addEventListener('click', () => hideModal('actionModal'));
+document.getElementById('chipActionClose').addEventListener('click', () => hideModal('chipActionModal'));
+document.getElementById('menuClose').addEventListener('click', () => hideModal('menuModal'));
+document.getElementById('savedClose').addEventListener('click', () => hideModal('savedModal'));
+document.getElementById('renameCancel').addEventListener('click', () => hideModal('renameModal'));
+
+document.getElementById('pickerSearch').addEventListener('input', (e) => {
+  renderPickerList(e.target.value);
+});
+
+// === Menu ===
+document.getElementById('menuBtn').addEventListener('click', () => showModal('menuModal'));
+
+document.getElementById('menuRename').addEventListener('click', () => {
+  hideModal('menuModal');
+  const inp = document.getElementById('renameInput');
+  inp.value = state.chart.name;
+  showModal('renameModal');
+  setTimeout(() => { inp.focus(); inp.select(); }, 100);
+});
+
+document.getElementById('renameSave').addEventListener('click', () => {
+  const v = document.getElementById('renameInput').value.trim();
+  if (v) { state.chart.name = v; persistCurrent(); render(); }
+  hideModal('renameModal');
+});
+
+document.getElementById('menuSave').addEventListener('click', () => {
+  hideModal('menuModal');
+  const saved = loadSaved(state.activeClass);
+  state.chart.lastModified = new Date().toISOString();
+  const idx = saved.findIndex(c => c.id === state.chart.id);
+  if (idx >= 0) saved[idx] = JSON.parse(JSON.stringify(state.chart));
+  else saved.unshift(JSON.parse(JSON.stringify(state.chart)));
+  writeSaved(state.activeClass, saved);
+  toast('Chart saved');
+});
+
+document.getElementById('menuNew').addEventListener('click', () => {
+  hideModal('menuModal');
+  const hasData = Object.keys(state.chart.assignments).length > 0
+    || state.chart.absent.length > 0
+    || state.chart.late.length > 0;
+  if (hasData && !confirm('Start a fresh chart? Current chart will be lost unless saved.')) return;
+  state.chart = newChart();
+  persistCurrent();
+  render();
+});
+
+document.getElementById('menuLoad').addEventListener('click', () => {
+  hideModal('menuModal');
+  renderSavedList();
+  showModal('savedModal');
+});
+
+document.getElementById('menuSwitchClass').addEventListener('click', () => {
+  hideModal('menuModal');
+  switchClass();
+});
+
+document.getElementById('menuReset').addEventListener('click', () => {
+  hideModal('menuModal');
+  if (!confirm('Clear all seats, late and absent for the current chart?')) return;
+  state.chart.assignments = {};
+  state.chart.absent = [];
+  state.chart.late = [];
+  persistCurrent();
+  render();
+});
+
+document.getElementById('randomFillBtn').addEventListener('click', randomFill);
+document.getElementById('checkinNextBtn').addEventListener('click', startOverdueCheckin);
+
+// Backup / restore / settings menu items
+document.getElementById('menuBackup').addEventListener('click', () => {
+  hideModal('menuModal');
+  backupAllData();
+});
+
+document.getElementById('menuRestore').addEventListener('click', () => {
+  hideModal('menuModal');
+  document.getElementById('restoreInput').click();
+});
+
+document.getElementById('restoreInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) restoreFromFile(file);
+  e.target.value = ''; // allow re-selecting same file
+});
+
+document.getElementById('menuCheckinSettings').addEventListener('click', () => {
+  hideModal('menuModal');
+  document.getElementById('overdueInput').value = settings.overdueDays;
+  showModal('settingsModal');
+});
+
+document.getElementById('settingsSave').addEventListener('click', () => {
+  const v = parseInt(document.getElementById('overdueInput').value, 10);
+  if (v >= 1 && v <= 120) {
+    settings.overdueDays = v;
+    saveSettings(settings);
+    render();
+  }
+  hideModal('settingsModal');
+});
+document.getElementById('settingsClose').addEventListener('click', () => hideModal('settingsModal'));
+
+// Roster management
+document.getElementById('menuManageRoster').addEventListener('click', () => {
+  hideModal('menuModal');
+  openRoster(state.activeClass);
+});
+document.getElementById('menuLayout').addEventListener('click', () => {
+  hideModal('menuModal');
+  openLayoutEditor();
+});
+document.getElementById('layoutClose').addEventListener('click', () => hideModal('layoutModal'));
+document.getElementById('layoutSave').addEventListener('click', saveLayoutEdits);
+document.getElementById('layoutReset').addEventListener('click', resetLayoutEdits);
+document.getElementById('rosterClose').addEventListener('click', () => hideModal('rosterModal'));
+document.getElementById('rosterAddStudent').addEventListener('click', () => openStudentEdit(null, ''));
+document.getElementById('rosterImportCsv').addEventListener('click', () => document.getElementById('csvImportInput').click());
+document.getElementById('csvImportInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) onImportCsv(file);
+  e.target.value = '';
+});
+document.getElementById('rosterClassSettings').addEventListener('click', openClassSettings);
+
+document.getElementById('studentEditClose').addEventListener('click', () => hideModal('studentEditModal'));
+document.getElementById('studentEditSave').addEventListener('click', onSaveStudentEdit);
+document.getElementById('studentNameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); onSaveStudentEdit(); }
+});
+document.getElementById('studentCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); onSaveStudentEdit(); }
+});
+
+document.getElementById('classSettingsClose').addEventListener('click', () => hideModal('classSettingsModal'));
+document.getElementById('classSettingsSave').addEventListener('click', onSaveClassSettings);
+document.getElementById('classDeleteBtn').addEventListener('click', onDeleteClass);
+
+document.getElementById('newClassClose').addEventListener('click', () => hideModal('newClassModal'));
+document.getElementById('newClassCreate').addEventListener('click', onCreateNewClass);
+document.getElementById('newClassLabelInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); onCreateNewClass(); }
+});
+
+// Tabs
+document.getElementById('tabSeating').addEventListener('click', () => setTab('seating'));
+document.getElementById('tabCheckins').addEventListener('click', () => setTab('checkins'));
+document.getElementById('tabBehaviours').addEventListener('click', () => setTab('behaviours'));
+
+// Check-in flow
+document.getElementById('newCheckinBtn').addEventListener('click', openCheckinPicker);
+document.getElementById('checkinPickClose').addEventListener('click', () => hideModal('checkinPickModal'));
+document.getElementById('checkinPickSearch').addEventListener('input', (e) => renderCheckinPickList(e.target.value));
+document.getElementById('checkinEntryClose').addEventListener('click', () => hideModal('checkinEntryModal'));
+document.getElementById('checkinEntrySave').addEventListener('click', saveCheckinEntry);
+document.getElementById('historyClose').addEventListener('click', () => hideModal('historyModal'));
+document.getElementById('historyAddBtn').addEventListener('click', () => openCheckinEntry(state.entryCode));
+document.getElementById('backupNowBtn').addEventListener('click', backupAllData);
+
+// Behaviour flow
+document.getElementById('newBehaviourBtn').addEventListener('click', openBehaviourPicker);
+document.getElementById('behaviourPickClose').addEventListener('click', () => hideModal('behaviourPickModal'));
+document.getElementById('behaviourPickSearch').addEventListener('input', (e) => renderBehaviourPickList(e.target.value));
+document.getElementById('behaviourEntryClose').addEventListener('click', () => hideModal('behaviourEntryModal'));
+document.getElementById('behaviourEntrySave').addEventListener('click', saveBehaviourEntry);
+document.getElementById('behaviourQuickClose').addEventListener('click', () => hideModal('behaviourQuickModal'));
+document.getElementById('behaviourQuickNote').addEventListener('click', () => {
+  const code = state.behaviourQuickCode;
+  hideModal('behaviourQuickModal');
+  if (code != null) openBehaviourEntry(code);
+});
+document.getElementById('behaviourHistoryClose').addEventListener('click', () => hideModal('behaviourHistoryModal'));
+document.getElementById('behaviourHistoryAddBtn').addEventListener('click', () => openBehaviourEntry(state.behaviourEntryCode));
+document.getElementById('backupNowBtnB').addEventListener('click', backupAllData);
+
+// Behaviour category manager
+document.getElementById('menuBehaviourTypes').addEventListener('click', () => {
+  hideModal('menuModal');
+  openBehaviourTypes();
+});
+document.getElementById('behaviourTypesClose').addEventListener('click', () => hideModal('behaviourTypesModal'));
+document.getElementById('behaviourTypeAdd').addEventListener('click', () => openBehaviourTypeEdit(null));
+document.getElementById('behaviourTypeReset').addEventListener('click', resetBehaviourTypes);
+document.getElementById('behaviourTypeEditClose').addEventListener('click', () => hideModal('behaviourTypeEditModal'));
+document.getElementById('behaviourTypeEditSave').addEventListener('click', onSaveBehaviourType);
+document.getElementById('behaviourTypeLabel').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); onSaveBehaviourType(); }
+});
+document.querySelectorAll('#behaviourTonePicker .tone-opt').forEach(b => {
+  b.addEventListener('click', () => renderTonePicker(b.dataset.tone));
+});
+
+// Seat-grid quick-entry for behaviour
+document.getElementById('actionBehaviour').addEventListener('click', () => {
+  const code = state.chart.assignments[state.actionSeat];
+  hideModal('actionModal');
+  if (code != null) openBehaviourQuick(code);
+});
+
+document.querySelectorAll('.mark-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = parseInt(btn.dataset.mark, 10);
+    if (state.entryMark === val) {
+      // tap the already-selected mark to clear it (note-only entry)
+      state.entryMark = null;
+      btn.classList.remove('selected');
+    } else {
+      state.entryMark = val;
+      document.querySelectorAll('.mark-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  });
+});
+
+function renderSavedList() {
+  const container = document.getElementById('savedList');
+  const saved = loadSaved(state.activeClass);
+  container.innerHTML = '';
+  if (saved.length === 0) {
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:#8e8e93">No saved charts for this class.</div>';
+    return;
+  }
+  saved.sort((a, b) => (b.lastModified || '').localeCompare(a.lastModified || ''));
+  saved.forEach(chart => {
+    const item = document.createElement('div');
+    item.className = 'saved-item';
+    const info = document.createElement('div');
+    info.className = 'saved-item-info';
+    const name = document.createElement('div');
+    name.className = 'saved-item-name';
+    name.textContent = chart.name;
+    const date = document.createElement('div');
+    date.className = 'saved-item-date';
+    const seated = Object.keys(chart.assignments || {}).length;
+    const lateN = (chart.late || []).length;
+    const absN = (chart.absent || []).length;
+    date.textContent = `${fmtTime(chart.lastModified)} · ${seated} seated, ${lateN} late, ${absN} absent`;
+    info.appendChild(name);
+    info.appendChild(date);
+    const actions = document.createElement('div');
+    actions.className = 'saved-actions';
+    const loadBtn = document.createElement('button');
+    loadBtn.textContent = 'Open';
+    loadBtn.addEventListener('click', () => {
+      state.chart = JSON.parse(JSON.stringify(chart));
+      if (!state.chart.late) state.chart.late = [];
+      persistCurrent();
+      hideModal('savedModal');
+      render();
+      toast('Chart loaded');
+    });
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', () => {
+      if (!confirm(`Delete "${chart.name}"?`)) return;
+      const arr = loadSaved(state.activeClass).filter(c => c.id !== chart.id);
+      writeSaved(state.activeClass, arr);
+      renderSavedList();
+    });
+    actions.appendChild(loadBtn);
+    actions.appendChild(delBtn);
+    item.appendChild(info);
+    item.appendChild(actions);
+    container.appendChild(item);
+  });
+}
+
+// === Export PNG ===
+document.getElementById('menuExport').addEventListener('click', () => {
+  hideModal('menuModal');
+  exportPNG();
+});
+
+function exportPNG() {
+  const cell = 130;
+  const pad = 50;
+  const titleH = 110;
+  const labelH = 50;
+  const W = 6 * cell + 2 * pad;
+  const footerH = (state.chart.late.length > 0 || state.chart.absent.length > 0) ? 110 : 50;
+  const H = titleH + labelH + 7 * cell + labelH + footerH;
+  const dpr = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  const cls = getClass(state.activeClass);
+  if (!cls) return;
+  ctx.fillStyle = cls.color;
+  ctx.fillRect(0, 0, W, 6);
+
+  ctx.fillStyle = '#1d1d1f';
+  ctx.font = '700 26px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(cls.label, W / 2, 44);
+  ctx.font = '600 18px -apple-system, system-ui, sans-serif';
+  ctx.fillText(state.chart.name, W / 2, 70);
+  ctx.fillStyle = '#8e8e93';
+  ctx.font = '400 13px -apple-system, system-ui, sans-serif';
+  const seatedN = Object.keys(state.chart.assignments).length;
+  const absN = state.chart.absent.length;
+  const lateN = state.chart.late.length;
+  ctx.fillText(`${fmtTime(state.chart.lastModified)}  ·  ${seatedN} seated, ${lateN} late, ${absN} absent`, W / 2, 92);
+
+  const gridTop = titleH + labelH;
+  ctx.fillStyle = '#8e8e93';
+  ctx.font = '600 14px -apple-system, system-ui, sans-serif';
+  ctx.fillText('BACK', W / 2, titleH + 30);
+  ctx.strokeStyle = '#d1d1d6';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad, gridTop - 4);
+  ctx.lineTo(W - pad, gridTop - 4);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  for (let r = 1; r <= 7; r++) {
+    for (let c = 1; c <= 6; c++) {
+      const id = `r${r}c${c}`;
+      if (!SEATS.includes(id)) continue;
+      const x = pad + (c - 1) * cell + 6;
+      const y = gridTop + (r - 1) * cell + 6;
+      const w = cell - 12;
+      const h = cell - 12;
+      const code = state.chart.assignments[id];
+      if (code != null) {
+        ctx.fillStyle = cls.color;
+        roundRect(ctx, x, y, w, h, 10);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        wrapText(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 12);
+        // Late marker
+        if (isLate(code)) {
+          const dotR = 10;
+          const dotX = x + w - dotR - 4;
+          const dotY = y + dotR + 4;
+          ctx.fillStyle = '#ff9500';
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '700 11px -apple-system, system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('L', dotX, dotY + 0.5);
+        }
+      } else {
+        ctx.fillStyle = '#fafafa';
+        ctx.strokeStyle = '#c7c7cc';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, x, y, w, h, 10);
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+  }
+
+  const frontY = gridTop + 7 * cell + 16;
+  ctx.strokeStyle = '#1d1d1f';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(pad, frontY - 8);
+  ctx.lineTo(W - pad, frontY - 8);
+  ctx.stroke();
+  ctx.fillStyle = '#1d1d1f';
+  ctx.font = '700 14px -apple-system, system-ui, sans-serif';
+  ctx.fillText('FRONT (you)', W / 2, frontY + 14);
+
+  let lineY = frontY + 48;
+  ctx.font = '600 13px -apple-system, system-ui, sans-serif';
+  if (state.chart.late.length > 0) {
+    ctx.fillStyle = '#b35900';
+    const names = state.chart.late.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b)).join(', ');
+    ctx.fillText('Late (L): ' + names, W / 2, lineY);
+    lineY += 22;
+  }
+  if (state.chart.absent.length > 0) {
+    ctx.fillStyle = '#b91c1c';
+    const names = state.chart.absent.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b)).join(', ');
+    ctx.fillText('Absent: ' + names, W / 2, lineY);
+  }
+
+  canvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safe = (cls.label + ' ' + state.chart.name).replace(/[^a-z0-9-_ ]/gi, '_');
+    a.download = safe + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, cx, cy, maxW) {
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  let size = 15;
+  ctx.font = `600 ${size}px -apple-system, system-ui, sans-serif`;
+  while (ctx.measureText(text).width > maxW && size > 10) {
+    size--;
+    ctx.font = `600 ${size}px -apple-system, system-ui, sans-serif`;
+  }
+  ctx.fillText(text, cx, cy);
+}
+
+initApp();
+</script>
+</body>
+</html>
