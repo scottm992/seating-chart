@@ -642,6 +642,9 @@ header {
 .scan-status.good { color: #146c2e; }
 .scan-status.bad { color: #b91c1c; }
 .scan-debug { padding: 0 16px 8px; text-align: center; font-size: 11px; color: #8e8e93; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.scan-thumb-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0 0 8px; }
+#scanThumb { width: 120px; height: 120px; border: 1px solid #d1d1d6; border-radius: 6px; background: #000; image-rendering: pixelated; }
+.scan-thumb-wrap span { font-size: 10px; color: #8e8e93; }
 .scan-recent {
   display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px;
   max-height: 92px; overflow-y: auto;
@@ -1178,6 +1181,7 @@ header {
     </div>
     <div class="scan-status" id="scanStatus">Point the camera at a test's QR code</div>
     <div class="scan-debug" id="scanDebug"></div>
+    <div class="scan-thumb-wrap"><canvas id="scanThumb" width="120" height="120"></canvas><span>what the scanner sees</span></div>
     <div class="scan-recent" id="scanRecent"></div>
   </div>
 </div>
@@ -2731,25 +2735,27 @@ function processFrame(jsQRfn, video) {
   }
   const vw = video.videoWidth, vh = video.videoHeight;
   scanFrames++;
-  // jsQR is far faster and MORE reliable at a moderate resolution than on a full
-  // multi-megapixel frame — at ~2MP it grinds (the frame rate visibly drops when a
-  // code is in view) and often fails to lock onto the grid. Downscale the long edge
-  // to ~960px before decoding; a code that fills a reasonable part of the frame keeps
-  // plenty of pixels per module at that size.
-  const TARGET = 960;
-  const scale = Math.min(1, TARGET / Math.max(vw, vh));
-  const w = Math.max(1, Math.round(vw * scale)), h = Math.max(1, Math.round(vh * scale));
-  scanCanvas.width = w;
-  scanCanvas.height = h;
-  scanCtx.drawImage(video, 0, 0, w, h);
-  const img = scanCtx.getImageData(0, 0, w, h);
+  // Decode a CENTRE CROP at native resolution. Downscaling the whole frame blurs an
+  // already-soft camera image, so jsQR can't threshold the modules; a native crop of
+  // the centre — where the aiming box is — stays crisp while being a moderate size
+  // that jsQR locks onto quickly.
+  const side = Math.min(vw, vh, 720);
+  const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
+  scanCanvas.width = side;
+  scanCanvas.height = side;
+  scanCtx.imageSmoothingEnabled = false;
+  scanCtx.drawImage(video, sx, sy, side, side, 0, 0, side, side);
+  const img = scanCtx.getImageData(0, 0, side, side);
   // Average brightness sample (diagnostic): ~0 would mean an iOS black-frame capture.
   let sum = 0, cnt = 0;
   for (let i = 0; i < img.data.length; i += 411 * 4) { sum += img.data[i]; cnt++; }
   const lum = Math.round(sum / Math.max(1, cnt));
   // Standard dark-on-light codes → dontInvert (correct and ~2x faster than attemptBoth).
   const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
-  if (dbg) dbg.textContent = `frame ${scanFrames} · ${w}×${h} (of ${vw}×${vh}) · lum ${lum}` +
+  // Diagnostic: mirror exactly what jsQR is fed into the on-screen thumbnail.
+  const thumb = document.getElementById('scanThumb');
+  if (thumb) { thumb.getContext('2d').drawImage(scanCanvas, 0, 0, thumb.width, thumb.height); }
+  if (dbg) dbg.textContent = `frame ${scanFrames} · crop ${side} (of ${vw}×${vh}) · lum ${lum}` +
     (result && result.data ? ` · read "${result.data}"` : '');
   if (result && result.data) handleScan(result.data);
 }
