@@ -2701,20 +2701,29 @@ function loadZXing() {
 
 // Decode the FULL frame (downscaled, aspect kept, no aggressive centre crop so the
 // whole code + quiet zone survive) with ZXing. Async; callers must guard re-entry.
+// On-device testing showed ZXing reads Scott's camera at ~1000px longest side but
+// FAILS at native 1080 — full-res screen moiré wrecks the binarizer, and the
+// anti-aliased downscale averages it out. We try a small ladder bracketing 1000 so
+// the sweet spot survives the student holding the code nearer or farther.
+const ZXING_TARGETS = [1000, 820, 1280];
 async function zxingDecodeFrame(video) {
   const vw = video.videoWidth, vh = video.videoHeight;
   if (!vw) return null;
-  const scale = Math.min(1, 1000 / Math.max(vw, vh));
-  const w = Math.max(1, Math.round(vw * scale)), h = Math.max(1, Math.round(vh * scale));
-  zxCanvas.width = w; zxCanvas.height = h;
-  zxCtx.imageSmoothingEnabled = true;
-  zxCtx.imageSmoothingQuality = 'high';
-  zxCtx.drawImage(video, 0, 0, w, h);
-  const img = zxCtx.getImageData(0, 0, w, h);
-  const results = await zxingApi.readBarcodes(img, {
-    formats: ['QRCode'], tryHarder: true, maxNumberOfSymbols: 1,
-  });
-  return results && results.length ? results[0].text : null;
+  const maxdim = Math.max(vw, vh);
+  for (const target of ZXING_TARGETS) {
+    const scale = Math.min(1, target / maxdim);
+    const w = Math.max(1, Math.round(vw * scale)), h = Math.max(1, Math.round(vh * scale));
+    zxCanvas.width = w; zxCanvas.height = h;
+    zxCtx.imageSmoothingEnabled = true;
+    zxCtx.imageSmoothingQuality = 'high';
+    zxCtx.drawImage(video, 0, 0, w, h);
+    const img = zxCtx.getImageData(0, 0, w, h);
+    const results = await zxingApi.readBarcodes(img, {
+      formats: ['QRCode'], tryHarder: true, maxNumberOfSymbols: 1,
+    });
+    if (results && results.length) return results[0].text;
+  }
+  return null;
 }
 
 // DIAGNOSTIC (remove before merge): a known-good QR encoding "123456" (v1, ECC-M),
@@ -2881,7 +2890,7 @@ function scanLoop(jsQRfn) {
     // ZXing runs async off the same live frames, one decode at a time (guarded so
     // slow decodes can't pile up). It's the primary decoder; jsQR above is now the
     // on-screen diagnostic/fallback.
-    if (zxingReady && !zxingBusy && video.videoWidth > 0 && video.readyState >= 2) {
+    if (zxingApi && !zxingBusy && video.videoWidth > 0 && video.readyState >= 2) {
       zxingBusy = true;
       zxingDecodeFrame(video).then(text => {
         zxStatus = text ? `ZXing read "${text}"` : 'ZXing —';
@@ -2922,8 +2931,9 @@ async function openScanner() {
   if (dbg0) dbg0.textContent = scanSelfTest;
 
   // Kick off the ZXing engine in parallel with camera startup (don't await — the
-  // loop starts decoding with ZXing as soon as zxingReady flips true).
-  zxStatus = ''; zxingReady = false; zxingBusy = false;
+  // loop starts decoding as soon as zxingApi is set). Don't clobber readiness if the
+  // engine loaded on a previous open, or repeat opens would stall the decoder.
+  zxStatus = ''; zxingBusy = false; zxingReady = !!zxingApi;
   loadZXing().catch(() => {});
 
   try {
