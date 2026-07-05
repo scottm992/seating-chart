@@ -4,3 +4,6 @@
 *.html text
 *.md   text
 *.json text
+
+# Vendored WebAssembly binary — never touch line endings.
+*.wasm binary

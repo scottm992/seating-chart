@@ -630,7 +630,6 @@ header {
 
 .scan-stage { position: relative; background: #000; }
 #scanVideo { width: 100%; max-height: 42vh; object-fit: cover; display: block; background: #000; }
-#scanCapture { width: 100%; max-height: 42vh; object-fit: contain; display: block; background: #000; }
 .scan-reticle {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 55%; aspect-ratio: 1; max-width: 260px;
@@ -642,10 +641,6 @@ header {
 }
 .scan-status.good { color: #146c2e; }
 .scan-status.bad { color: #b91c1c; }
-.scan-debug { padding: 0 16px 8px; text-align: center; font-size: 11px; color: #8e8e93; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
-.scan-thumb-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0 0 8px; }
-#scanThumb { width: 120px; height: 120px; border: 1px solid #d1d1d6; border-radius: 6px; background: #000; image-rendering: pixelated; }
-.scan-thumb-wrap span { font-size: 10px; color: #8e8e93; }
 .scan-recent {
   display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px;
   max-height: 92px; overflow-y: auto;
@@ -1174,19 +1169,13 @@ header {
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Scan QR codes</div>
-      <div style="display:flex; gap:8px; align-items:center">
-        <button class="btn secondary" id="scanCaptureBtn" style="font-size:13px; padding:6px 10px; min-height:auto">📸 Capture</button>
-        <button class="btn ghost" id="scanClose">Done</button>
-      </div>
+      <button class="btn ghost" id="scanClose">Done</button>
     </div>
     <div class="scan-stage">
       <video id="scanVideo" playsinline webkit-playsinline muted autoplay></video>
       <div class="scan-reticle"></div>
-      <img id="scanCapture" alt="captured frame" style="display:none">
     </div>
     <div class="scan-status" id="scanStatus">Point the camera at a test's QR code</div>
-    <div class="scan-debug" id="scanDebug"></div>
-    <div class="scan-thumb-wrap"><canvas id="scanThumb" width="120" height="120"></canvas><span>what the scanner sees</span></div>
     <div class="scan-recent" id="scanRecent"></div>
   </div>
 </div>
@@ -2648,63 +2637,44 @@ function renderReturnsRoster() {
 }
 
 // ---- QR camera scanning ----
-// jsQR is loaded lazily (only when the scanner is first opened) from the vendored
-// local file, so users who never scan don't pay for the ~130KB decoder.
-let jsQRPromise = null;
-function loadJsQR() {
-  if (window.jsQR) return Promise.resolve(window.jsQR);
-  if (jsQRPromise) return jsQRPromise;
-  jsQRPromise = new Promise((resolve, reject) => {
-    const sc = document.createElement('script');
-    sc.src = 'jsQR.min.js';
-    sc.onload = () => window.jsQR ? resolve(window.jsQR) : reject(new Error('jsQR missing'));
-    sc.onerror = () => { jsQRPromise = null; reject(new Error('load failed')); };
-    document.head.appendChild(sc);
-  });
-  return jsQRPromise;
-}
-
-let scanStream = null, scanRAF = null, scanRVFC = null, scanning = false, scanFrames = 0;
+// The scanner decodes with ZXing (the ZXing-C++ engine compiled to WebAssembly).
+// jsQR was tried first but couldn't read real camera frames of a QR shown on a
+// monitor (screen moiré wrecks its binarizer) even though iOS's native camera and
+// ZXing read them instantly. ZXing is vendored locally (zxing-reader.min.js +
+// zxing-share.js + zxing_reader.wasm) and lazy-loaded only when the scanner opens,
+// so it works offline and users who never scan don't pay for the ~1MB engine.
+let zxingApi = null, zxingPromise = null, zxingBusy = false;
+let scanStream = null, scanRAF = null, scanRVFC = null, scanning = false;
 let scanAudioCtx = null;
 let lastScanData = null, lastScanAt = 0;
-const scanCanvas = document.createElement('canvas');
-const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
-
-// ZXing (WebAssembly) decoder — the real ZXing-C++ engine, far more tolerant of
-// screen moiré, glare, and perspective than jsQR, which the on-device self-test
-// proved is fine on clean images but which fails on this iPhone's real camera
-// frames. Lazy-loaded (ESM) from CDN only when the scanner opens; jsQR remains as
-// a fallback if ZXing can't load (e.g. offline).
-const ZXING_BASE = 'https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.0/dist';
-let zxingApi = null, zxingPromise = null, zxingReady = false, zxingBusy = false;
-let zxStatus = '';
 const zxCanvas = document.createElement('canvas');
 const zxCtx = zxCanvas.getContext('2d', { willReadFrequently: true });
 
 function loadZXing() {
   if (zxingApi) return Promise.resolve(zxingApi);
   if (zxingPromise) return zxingPromise;
-  zxingPromise = import(ZXING_BASE + '/es/reader/index.js').then(mod => {
+  zxingPromise = import('./zxing-reader.min.js').then(mod => {
     mod.prepareZXingModule({
       overrides: {
+        // Resolve the .wasm next to the page (relative, so it works under the
+        // GitHub Pages sub-path and offline alike).
         locateFile: (path, prefix) =>
-          path.endsWith('.wasm') ? ZXING_BASE + '/reader/' + path : prefix + path,
+          path.endsWith('.wasm') ? './' + path : prefix + path,
       },
       fireImmediately: true,
     });
     zxingApi = mod;
-    zxingReady = true;
     return mod;
-  }).catch(e => { zxingPromise = null; zxStatus = 'ZXing load failed'; throw e; });
+  }).catch(e => { zxingPromise = null; throw e; });
   return zxingPromise;
 }
 
 // Decode the FULL frame (downscaled, aspect kept, no aggressive centre crop so the
 // whole code + quiet zone survive) with ZXing. Async; callers must guard re-entry.
-// On-device testing showed ZXing reads Scott's camera at ~1000px longest side but
-// FAILS at native 1080 — full-res screen moiré wrecks the binarizer, and the
-// anti-aliased downscale averages it out. We try a small ladder bracketing 1000 so
-// the sweet spot survives the student holding the code nearer or farther.
+// ZXing reads the camera at ~1000px longest side but FAILS at native 1080 — full-res
+// screen moiré wrecks the binarizer, and the anti-aliased downscale averages it out.
+// We try a small ladder bracketing 1000 so the sweet spot survives the code being
+// held nearer or farther; first hit wins.
 const ZXING_TARGETS = [1000, 820, 1280];
 async function zxingDecodeFrame(video) {
   const vw = video.videoWidth, vh = video.videoHeight;
@@ -2724,67 +2694,6 @@ async function zxingDecodeFrame(video) {
     if (results && results.length) return results[0].text;
   }
   return null;
-}
-
-// DIAGNOSTIC (remove before merge): a known-good QR encoding "123456" (v1, ECC-M),
-// as a 21x21 module bitmap flattened row-major ('1' = dark). Used by the on-device
-// self-test to prove jsQR can decode on THIS device at all, independent of the camera.
-const SELFTEST_QR_SIZE = 21;
-const SELFTEST_QR_BITS =
-  '111111100001001111111100000100111101000001101110101010001011101101110101000101011101101' +
-  '110101110101011101100000101101001000001111111101010101111111000000001000000000000101111' +
-  '100101001111100001110001111111001111011001101010101101001001101011101111000111110001100' +
-  '010100100010000000001010100100100111111100011010010101100000101000000110110101110101111' +
-  '010010100101110101101111001000101110101110101100000100000100101111001010111111101100100' +
-  '100100';
-let scanSelfTest = '';
-
-// Build the embedded QR as an RGBA Uint8ClampedArray (dark modules black, quiet zone
-// white), with no camera/canvas involved. Returns {data, width, height}.
-function buildSelfTestImage(scale, quiet) {
-  const n = SELFTEST_QR_SIZE, dim = (n + 2 * quiet) * scale;
-  const data = new Uint8ClampedArray(dim * dim * 4).fill(255);
-  for (let r = 0; r < n; r++) {
-    for (let c = 0; c < n; c++) {
-      if (SELFTEST_QR_BITS[r * n + c] !== '1') continue;
-      const x0 = (quiet + c) * scale, y0 = (quiet + r) * scale;
-      for (let y = y0; y < y0 + scale; y++) {
-        for (let x = x0; x < x0 + scale; x++) {
-          const i = (y * dim + x) * 4;
-          data[i] = data[i + 1] = data[i + 2] = 0;
-        }
-      }
-    }
-  }
-  return { data, width: dim, height: dim };
-}
-
-// One-shot bisection: can jsQR decode a KNOWN-GOOD QR on THIS device?
-//   A = pure algorithm  (hand-built pixel array → jsQR, no canvas)
-//   B = canvas path     (same pixels through putImageData/getImageData → jsQR)
-// If A fails: jsQR itself is broken/mis-loaded on this device.
-// If A passes but B fails: canvas getImageData mangles pixels on this device.
-// If both pass: jsQR + canvas are fine → the CAMERA-capture path is the culprit.
-function runScanSelfTest(jsQRfn) {
-  let a = 'ERR', b = 'ERR';
-  try {
-    const img = buildSelfTestImage(8, 4);
-    const ra = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-    a = ra && ra.data === '123456' ? 'PASS' : (ra && ra.data ? 'WRONG(' + ra.data + ')' : 'FAIL');
-  } catch (e) { a = 'ERR:' + (e && e.message || e); }
-  try {
-    const img = buildSelfTestImage(8, 4);
-    const cv = document.createElement('canvas');
-    cv.width = img.width; cv.height = img.height;
-    const cx = cv.getContext('2d', { willReadFrequently: true });
-    cx.putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
-    const got = cx.getImageData(0, 0, img.width, img.height);
-    const rb = jsQRfn(got.data, got.width, got.height, { inversionAttempts: 'attemptBoth' });
-    b = rb && rb.data === '123456' ? 'PASS' : (rb && rb.data ? 'WRONG(' + rb.data + ')' : 'FAIL');
-  } catch (e) { b = 'ERR:' + (e && e.message || e); }
-  scanSelfTest = 'selftest A=' + a + ' B=' + b;
-  try { console.log('[scan]', scanSelfTest); } catch (e) {}
-  return scanSelfTest;
 }
 
 function setScanStatus(msg, cls) {
@@ -2838,64 +2747,21 @@ function handleScan(data) {
   renderReturnsRoster();
 }
 
-function processFrame(jsQRfn, video) {
-  const dbg = document.getElementById('scanDebug');
-  if (!(video.videoWidth > 0 && video.readyState >= 2)) {
-    if (dbg) dbg.textContent = `waiting for camera… readyState ${video.readyState}, ${video.videoWidth}×${video.videoHeight}`;
-    return;
-  }
-  const vw = video.videoWidth, vh = video.videoHeight;
-  scanFrames++;
-  // The code is often shown on a monitor. Capturing the centre crop 1:1 with smoothing
-  // OFF resolves the screen's sub-pixel grid into moiré that wrecks jsQR's binarizer —
-  // and the thumbnail hides it because a 6x downscale averages the moiré away, so the
-  // code "looks clear" while the pixels jsQR sees are a mesh. So instead: downscale the
-  // crop WITH smoothing (an anti-alias low-pass filter that erases the moiré), onto a
-  // white ground that guarantees the quiet zone jsQR needs if the code is flush.
-  const side = Math.min(vw, vh, 720);
-  const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
-  const OUT = 480, PAD = 24;
-  scanCanvas.width = OUT;
-  scanCanvas.height = OUT;
-  scanCtx.imageSmoothingEnabled = true;
-  scanCtx.imageSmoothingQuality = 'high';
-  scanCtx.fillStyle = '#fff';
-  scanCtx.fillRect(0, 0, OUT, OUT);
-  scanCtx.drawImage(video, sx, sy, side, side, PAD, PAD, OUT - 2 * PAD, OUT - 2 * PAD);
-  const img = scanCtx.getImageData(0, 0, OUT, OUT);
-  // Brightness min/max/avg (diagnostic): ~0 avg = black frame; a narrow range = washed out.
-  let sum = 0, cnt = 0, mn = 255, mx = 0;
-  for (let i = 0; i < img.data.length; i += 411 * 4) { const v = img.data[i]; sum += v; cnt++; if (v < mn) mn = v; if (v > mx) mx = v; }
-  const lum = Math.round(sum / Math.max(1, cnt));
-  const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-  // Diagnostic: mirror exactly what jsQR is fed into the on-screen thumbnail.
-  const thumb = document.getElementById('scanThumb');
-  if (thumb) { thumb.getContext('2d').drawImage(scanCanvas, 0, 0, thumb.width, thumb.height); }
-  if (dbg) dbg.textContent = `frame ${scanFrames} · ${OUT}px · lum ${lum} [${mn}-${mx}]` +
-    (result && result.data ? ` · jsQR read "${result.data}"` : '') +
-    (zxStatus ? ` · ${zxStatus}` : (zxingReady ? '' : ' · ZXing loading…')) +
-    (scanSelfTest ? ` · ${scanSelfTest}` : '');
-  if (result && result.data) handleScan(result.data);
-}
-
 // Drive the decode loop off requestVideoFrameCallback when available: it fires only
 // once a fresh frame has actually been painted, which avoids iOS's black-frame capture.
-// Falls back to requestAnimationFrame on browsers without rVFC.
-function scanLoop(jsQRfn) {
+// Falls back to requestAnimationFrame on browsers without rVFC. ZXing decodes are
+// async; a re-entry guard runs one at a time so slow frames can't pile up.
+function scanLoop() {
   const video = document.getElementById('scanVideo');
   const hasRVFC = typeof video.requestVideoFrameCallback === 'function';
   const tick = () => {
     if (!scanning) return;
-    processFrame(jsQRfn, video);
-    // ZXing runs async off the same live frames, one decode at a time (guarded so
-    // slow decodes can't pile up). It's the primary decoder; jsQR above is now the
-    // on-screen diagnostic/fallback.
     if (zxingApi && !zxingBusy && video.videoWidth > 0 && video.readyState >= 2) {
       zxingBusy = true;
-      zxingDecodeFrame(video).then(text => {
-        zxStatus = text ? `ZXing read "${text}"` : 'ZXing —';
-        if (text && scanning) handleScan(text);
-      }).catch(() => { zxStatus = 'ZXing err'; }).finally(() => { zxingBusy = false; });
+      zxingDecodeFrame(video)
+        .then(text => { if (text && scanning) handleScan(text); })
+        .catch(() => {})
+        .finally(() => { zxingBusy = false; });
     }
     if (hasRVFC) scanRVFC = video.requestVideoFrameCallback(tick);
     else scanRAF = requestAnimationFrame(tick);
@@ -2915,26 +2781,11 @@ async function openScanner() {
 
   lastScanData = null; lastScanAt = 0;
   document.getElementById('scanRecent').innerHTML = '';
-  const cap = document.getElementById('scanCapture');
-  cap.style.display = 'none'; cap.src = '';
-  document.getElementById('scanVideo').style.display = '';
   setScanStatus('Starting camera…', '');
   showModal('scanModal');
 
-  let jsQRfn;
-  try { jsQRfn = await loadJsQR(); }
-  catch (e) { setScanStatus('Couldn’t load the scanner. Reconnect to the internet once, then retry.', 'bad'); return; }
-
-  // DIAGNOSTIC (remove before merge): prove jsQR can decode on this device at all.
-  runScanSelfTest(jsQRfn);
-  const dbg0 = document.getElementById('scanDebug');
-  if (dbg0) dbg0.textContent = scanSelfTest;
-
-  // Kick off the ZXing engine in parallel with camera startup (don't await — the
-  // loop starts decoding as soon as zxingApi is set). Don't clobber readiness if the
-  // engine loaded on a previous open, or repeat opens would stall the decoder.
-  zxStatus = ''; zxingBusy = false; zxingReady = !!zxingApi;
-  loadZXing().catch(() => {});
+  // Load the decoder (vendored locally, works offline) in parallel with the camera.
+  const zxingLoad = loadZXing().catch(() => null);
 
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
@@ -2963,10 +2814,18 @@ async function openScanner() {
     setTimeout(res, 1500);
   });
   try { await video.play(); } catch (e) {}
+
+  // Make sure the decoder is ready before we promise the user it's scanning.
+  await zxingLoad;
+  if (!zxingApi) {
+    setScanStatus('Couldn’t load the scanner. Reconnect to the internet once, then retry.', 'bad');
+    if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+    return;
+  }
+
   setScanStatus('Point the camera at a QR code', '');
-  scanFrames = 0;
   scanning = true;
-  scanLoop(jsQRfn);
+  scanLoop();
 }
 
 function closeScanner() {
@@ -2976,89 +2835,8 @@ function closeScanner() {
   if (scanRVFC && video && video.cancelVideoFrameCallback) { video.cancelVideoFrameCallback(scanRVFC); scanRVFC = null; }
   if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
   if (video) video.srcObject = null;
-  const cap = document.getElementById('scanCapture');
-  if (cap) { cap.style.display = 'none'; cap.src = ''; }
-  if (video) video.style.display = '';
   hideModal('scanModal');
   render();
-}
-
-// Diagnostic helpers: draw a source canvas scaled to a max dimension, or centre-cropped.
-function dbgScaled(src, maxDim) {
-  const s = Math.min(1, maxDim / Math.max(src.width, src.height));
-  const w = Math.max(1, Math.round(src.width * s)), h = Math.max(1, Math.round(src.height * s));
-  const t = document.createElement('canvas'); t.width = w; t.height = h;
-  const tx = t.getContext('2d', { willReadFrequently: true });
-  tx.imageSmoothingEnabled = true; tx.imageSmoothingQuality = 'high';
-  tx.drawImage(src, 0, 0, w, h);
-  return t;
-}
-function dbgCrop(src, side) {
-  const s = Math.min(src.width, src.height, side);
-  const sx = Math.floor((src.width - s) / 2), sy = Math.floor((src.height - s) / 2);
-  const t = document.createElement('canvas'); t.width = s; t.height = s;
-  t.getContext('2d', { willReadFrequently: true }).drawImage(src, sx, sy, s, s, 0, 0, s, s);
-  return t;
-}
-// Rough sharpness: mean neighbour-gradient on a subsampled grid. High = crisp edges,
-// low = blurry/out-of-focus (which is what defeats every QR decoder).
-function dbgSharpness(cnv) {
-  const w = cnv.width, h = cnv.height;
-  const d = cnv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
-  const step = Math.max(1, Math.floor(Math.max(w, h) / 300));
-  let sum = 0, n = 0;
-  const lum = i => d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
-  for (let y = 0; y + step < h; y += step) for (let x = 0; x + step < w; x += step) {
-    const i = (y * w + x) * 4;
-    sum += Math.abs(lum(i) - lum(i + step * 4)) + Math.abs(lum(i) - lum(i + step * w * 4));
-    n++;
-  }
-  return Math.round(sum / Math.max(1, n));
-}
-// Run BOTH engines on a canvas; returns e.g. "Z:321 J:-".
-async function dbgEngines(cnv) {
-  const img = cnv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, cnv.width, cnv.height);
-  let z = '-', j = '-';
-  try { const r = window.jsQR && window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' }); if (r && r.data) j = r.data; } catch (e) { j = 'err'; }
-  try { if (zxingApi) { const r = await zxingApi.readBarcodes(img, { formats: ['QRCode'], tryHarder: true, maxNumberOfSymbols: 1 }); if (r && r.length) z = r[0].text; } } catch (e) { z = 'err'; }
-  return `Z:${z} J:${j}`;
-}
-
-// Diagnostic: freeze the raw camera frame, show it, and run BOTH decoders against a
-// ladder of scales + a centre crop on-device — so we learn whether ANY software path
-// can read the exact bytes the phone captured. If every variant reads "-", the frame
-// itself is the problem (focus/size/contrast), not the decoder.
-async function captureScanFrame() {
-  const video = document.getElementById('scanVideo');
-  if (!video || !video.videoWidth) { toast('Camera not ready yet'); return; }
-  scanning = false;   // freeze the loop
-  const c = document.createElement('canvas');
-  c.width = video.videoWidth;
-  c.height = video.videoHeight;
-  c.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, c.width, c.height);
-  const cap = document.getElementById('scanCapture');
-  cap.src = c.toDataURL('image/png');
-  cap.style.display = '';
-  video.style.display = 'none';
-
-  setScanStatus('Decoding the captured frame every way… (screenshot the line below)', '');
-  const dbg = document.getElementById('scanDebug');
-  const variants = [
-    ['native', c],
-    ['ds1500', dbgScaled(c, 1500)],
-    ['ds1000', dbgScaled(c, 1000)],
-    ['ds700', dbgScaled(c, 700)],
-    ['crop1000', dbgCrop(c, 1000)],
-    ['crop600', dbgCrop(c, 600)],
-  ];
-  const lines = [`frame ${c.width}×${c.height} · sharp ${dbgSharpness(c)} · zxing ${zxingReady ? 'ready' : 'NOT ready'}`];
-  for (const [label, cnv] of variants) {
-    lines.push(`${label}(${cnv.width}) ${await dbgEngines(cnv)}`);
-  }
-  const report = lines.join('   |   ');
-  if (dbg) { dbg.style.whiteSpace = 'normal'; dbg.textContent = report; }
-  try { console.log('[scan capture]', report); } catch (e) {}
-  setScanStatus('Capture decode test done — screenshot the line below and send it. Tap Done to scan again.', '');
 }
 
 // === Backup / Restore ===
@@ -3969,7 +3747,6 @@ document.getElementById('backupNowBtnB').addEventListener('click', backupAllData
 // Scanner flow
 document.getElementById('scanQrBtn').addEventListener('click', openScanner);
 document.getElementById('scanClose').addEventListener('click', closeScanner);
-document.getElementById('scanCaptureBtn').addEventListener('click', captureScanFrame);
 document.getElementById('returnsResetBtn').addEventListener('click', resetReturns);
 // The generic backdrop handler only hides the sheet; for the scanner we must also
 // release the camera, so give it a dedicated backdrop-tap handler.
