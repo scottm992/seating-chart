@@ -1,12 +1,11 @@
 name: Deploy to GitHub Pages
 
-# Static site (seating.html + jsQR.min.js + index redirect). Deployed via the
-# official GitHub Actions Pages pipeline, which is more reliable than the legacy
-# Jekyll builder. While previewing the Scanner feature, this also deploys the
-# feature branch; drop that branch from the trigger once it's merged to main.
+# Static site (seating.html + vendored ZXing decoder + index redirect). Deployed
+# via the official GitHub Actions Pages pipeline, which is more reliable than the
+# legacy Jekyll builder.
 on:
   push:
-    branches: ["main", "feature/scanner-tab"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
