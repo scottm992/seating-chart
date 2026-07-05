@@ -629,8 +629,8 @@ header {
 .return-row.done .return-name { color: #8e8e93; }
 
 .scan-stage { position: relative; background: #000; }
-#scanVideo { width: 100%; max-height: 58vh; object-fit: cover; display: block; background: #000; }
-#scanCapture { width: 100%; max-height: 58vh; object-fit: contain; display: block; background: #000; }
+#scanVideo { width: 100%; max-height: 42vh; object-fit: cover; display: block; background: #000; }
+#scanCapture { width: 100%; max-height: 42vh; object-fit: contain; display: block; background: #000; }
 .scan-reticle {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 55%; aspect-ratio: 1; max-width: 260px;
@@ -1174,7 +1174,10 @@ header {
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Scan QR codes</div>
-      <button class="btn ghost" id="scanClose">Done</button>
+      <div style="display:flex; gap:8px; align-items:center">
+        <button class="btn secondary" id="scanCaptureBtn" style="font-size:13px; padding:6px 10px; min-height:auto">📸 Capture</button>
+        <button class="btn ghost" id="scanClose">Done</button>
+      </div>
     </div>
     <div class="scan-stage">
       <video id="scanVideo" playsinline webkit-playsinline muted autoplay></video>
@@ -1184,7 +1187,6 @@ header {
     <div class="scan-status" id="scanStatus">Point the camera at a test's QR code</div>
     <div class="scan-debug" id="scanDebug"></div>
     <div class="scan-thumb-wrap"><canvas id="scanThumb" width="120" height="120"></canvas><span>what the scanner sees</span></div>
-    <button class="btn secondary" id="scanCaptureBtn" style="margin:0 16px 10px">📸 Capture a frame to send me</button>
     <div class="scan-recent" id="scanRecent"></div>
   </div>
 </div>
