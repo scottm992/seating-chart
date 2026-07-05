@@ -1,20 +1,22 @@
 # Seating Chart Webapp
 
-A single-file HTML webapp for recording where students sit during tests. Designed for phone use, no build step, no backend, no dependencies.
+An HTML webapp for recording where students sit during tests. Designed for phone use, no build step, no backend. The core app is a single self-contained `seating.html`; the Scanner tab additionally uses one vendored QR library file (lazy-loaded on demand).
 
 ## Files
 
-- `seating.html` — the entire app (HTML + CSS + JS + base64 icon, ~130KB)
+- `seating.html` — the entire app (HTML + CSS + JS + base64 icon, ~140KB)
+- `jsQR.min.js` — vendored QR-decoding library (Apache-2.0), used only by the Scanner tab. Lazy-loaded the first time you open the scanner, so it costs nothing until then.
 
-That's it. Drop it on any static host or open it directly from the filesystem on a phone.
+Drop both on any static host (they must sit side by side), or open `seating.html` directly from the filesystem on a phone. Everything except the camera scan works from `file://`; the camera needs an HTTPS origin (e.g. the GitHub Pages URL).
 
-## Three views
+## Four views
 
 The app has a tab switcher at the top:
 
 1. **Seating** — the original test-day seat-recording grid (assign students to desks, late/absent status, PNG export).
 2. **Check-ins** — homework check-in tracking: give a student a mark /4 with a date and note, see their history over time, and spot who's overdue for a touch-base.
 3. **Behaviour** — an incident log: record things you want to track (phone use, long bathroom trips, off-task, a call/email home, a positive) against a student, with a date and optional note. Deliberately the *inverse* of Check-ins — students with recent incidents rise to the top, clean students sink to the bottom, and nothing ever nags you to go log one. See the Behaviours section below.
+4. **Scanner** — test hand-back tracking: after you hand a test back for review, check students off as they return it — by tapping their name, or by scanning the QR code (their student id) on their paper with the camera. A progress bar shows how many of N you've got back. See the Scanner section below.
 
 ## Usage
 
@@ -260,6 +262,41 @@ Because behaviours are keyed by student code just like check-ins, the same two c
 - `deleteClass` removes the per-class `seating_behaviours_v1_<cls>` key.
 - `enterClass` loads behaviours into `state.behaviours`; `switchClass` clears it; `onRemoveStudent` / `onSaveStudentEdit` refresh it for the active class.
 
+## Scanner (test hand-back tracking)
+
+The Scanner tab answers one question: *after I hand a test back to the class to review, have I gotten every copy back?* It's a simple check-off list per class that you reset each time you hand a test out.
+
+### Data shape
+
+Stored per class in `localStorage` key `seating_returns_v1_<classKey>` as a plain array of the student codes that have been checked off:
+
+```js
+[56020, 75001, ...]   // codes of students who've handed their test back
+```
+
+Deliberately the lightest of the four data models — no dates, no history, no per-entry objects — because it's a transient "this round" list, not a semester record. `state.returns` mirrors it in memory; `loadReturns(cls)` / `persistReturns()` are the storage helpers, `isReturned` / `markReturned` / `toggleReturn` the mutators.
+
+### The view
+
+- A **progress bar** and "*X of N handed back*" count at the top.
+- The roster sorts **outstanding students first** (empty circle), so the list shrinks toward empty as tests come in; **returned students drop to the bottom**, muted with a green check. Tap any name to toggle. When everyone's in, a "🎉 All N tests handed back" banner appears.
+- **Start new round** clears every check-mark for the class (with a confirm) so you can track the next test.
+
+### QR scanning
+
+**+ 📷 Scan QR codes** opens a camera sheet. Each test carries a QR code encoding the student's id (their `code`); scanning it checks that student off. The scanner:
+
+- Uses `getUserMedia` (rear camera) + `jsQR` to decode frames continuously, so you can run through a stack without tapping between scans. A short beep and an on-screen "✓ Name (n/N)" confirm each one; the same code held in view is debounced for ~2s.
+- Matches tolerantly: the decoded text is matched to a student code exactly first, then by any digit-run inside it (so `123456`, `id:123456`, or `A5-123456` all resolve). An unmatched code shows a "No student with code …" message and a low buzz.
+- Is **iOS-friendly**: jsQR is bundled locally (iOS Safari has no `BarcodeDetector`), the video is `playsinline muted`, and audio is primed inside the button tap. The camera needs an HTTPS origin — works on the GitHub Pages URL and the home-screen install, not from `file://`.
+- Releases the camera on close (button, backdrop tap, or leaving the sheet). If the camera is unavailable or permission is denied, it says so and you fall back to tapping names.
+
+`jsQR.min.js` is loaded lazily the first time you open the scanner (`loadJsQR()`), so users who never scan never download it.
+
+### Cascade plumbing
+
+Returns are keyed by student code, so the same cascades as check-ins/behaviours apply: `removeStudentFromClass` drops the code, `changeStudentCode` renames it, `deleteClass` removes the `seating_returns_v1_<cls>` key, and `enterClass` / `switchClass` load / clear `state.returns`.
+
 ## Backup & restore (data durability)
 
 **Important context:** `localStorage` is not durable storage. A browser cache clear, iOS evicting site data, switching browsers, or reinstalling the home-screen webapp can wipe everything silently. For seating charts (re-created each test) this is a minor annoyance; for a semester of homework check-ins it would be a real loss. Hence the backup system.
@@ -285,14 +322,15 @@ Backup JSON shape:
       current: {...chart},
       saved: [...charts],
       checkins: {...},
-      behaviours: {...}
+      behaviours: {...},
+      returns: [code, ...]
     },
     ...
   }
 }
 ```
 
-Version 2 added `behaviourTypes` (global) and per-class `behaviours`; version 3 added the global `layout`. Restore reads older files fine — any missing top-level key is simply skipped, leaving the current value in place.
+Version 2 added `behaviourTypes` (global) and per-class `behaviours`; version 3 added the global `layout`; version 4 added per-class `returns` (Scanner check-off). Restore reads older files fine — any missing top-level or per-class key is simply skipped, leaving the current value in place.
 
 Recommended habit: back up after any check-in session or roster edit, save the file to Google Drive or Files. This is the durable copy. The backup is also the path for moving data between devices — back up on phone, restore on tablet (or vice versa).
 
@@ -304,6 +342,7 @@ Storage keys summary:
 - `seating_checkins_v1_<cls>` — homework check-ins
 - `seating_behaviours_v1_<cls>` — behaviour incident log (per class)
 - `seating_behaviour_types_v1` — global behaviour category list `[{id,label,emoji,tone}]`
+- `seating_returns_v1_<cls>` — Scanner test hand-back check-off (per class), array of student codes
 - `seating_layout_v1` — global room layout (list of active desk ids within the 6×7 envelope)
 - `seating_settings_v1` — `{ overdueDays }`
 - `seating_last_backup_v1` — timestamp (ms) of last backup

@@ -596,6 +596,61 @@ header {
   border-color: var(--accent, #1d1d1f);
 }
 
+/* Scanner (test returns) */
+.returns-progress { }
+.returns-progress-bar {
+  height: 10px; border-radius: 6px; background: #e5e5ea; overflow: hidden;
+}
+.returns-progress-fill {
+  height: 100%; width: 0%; background: #34c759; border-radius: 6px;
+  transition: width 0.25s ease;
+}
+.returns-progress-label {
+  margin-top: 6px; font-size: 13px; font-weight: 600; color: #8e8e93; text-align: center;
+}
+.returns-alldone {
+  text-align: center; padding: 12px; margin-bottom: 4px;
+  background: #e6f4ea; color: #146c2e; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+}
+.return-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 4px; border-bottom: 1px solid #f2f2f7; cursor: pointer;
+}
+.return-row:last-child { border-bottom: none; }
+.return-row:active { background: #fafafa; }
+.return-check {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid #c7c7cc; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 15px; font-weight: 700;
+}
+.return-row.done .return-check { background: #34c759; border-color: #34c759; }
+.return-name { flex: 1; font-size: 16px; min-width: 0; }
+.return-row.done .return-name { color: #8e8e93; }
+
+.scan-stage { position: relative; background: #000; }
+#scanVideo { width: 100%; max-height: 58vh; object-fit: cover; display: block; background: #000; }
+.scan-reticle {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 55%; aspect-ratio: 1; max-width: 260px;
+  border: 3px solid rgba(255,255,255,0.85); border-radius: 16px;
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.25); pointer-events: none;
+}
+.scan-status {
+  padding: 12px 16px; text-align: center; font-size: 14px; font-weight: 600; color: #1d1d1f;
+}
+.scan-status.good { color: #146c2e; }
+.scan-status.bad { color: #b91c1c; }
+.scan-recent {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px;
+  max-height: 92px; overflow-y: auto;
+}
+.scan-recent .scan-chip {
+  background: #e6f4ea; color: #146c2e; padding: 5px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600;
+}
+.scan-recent .scan-chip.dup { background: #f2f2f7; color: #8e8e93; }
+
 .toast {
   position: fixed;
   top: 80px; left: 50%;
@@ -633,6 +688,7 @@ header {
       <button class="tab active" id="tabSeating">Seating</button>
       <button class="tab" id="tabCheckins">Check-ins</button>
       <button class="tab" id="tabBehaviours">Behaviour</button>
+      <button class="tab" id="tabScanner">Scanner</button>
     </div>
   </header>
 
@@ -697,6 +753,23 @@ header {
         <span class="sort-note">Most recent first</span>
       </div>
       <div id="behaviourRoster"></div>
+    </div>
+  </div>
+
+  <!-- SCANNER VIEW -->
+  <div class="container view" id="scannerView" style="display:none">
+    <button class="btn primary-wide" id="scanQrBtn">📷 Scan QR codes</button>
+
+    <div class="section">
+      <div class="returns-progress">
+        <div class="returns-progress-bar"><div class="returns-progress-fill" id="returnsFill"></div></div>
+        <div class="returns-progress-label" id="returnsCount">0 of 0 handed back</div>
+      </div>
+      <div class="section-head" style="margin-top:12px">
+        <h2 style="margin:0">Tests handed back</h2>
+        <button class="btn secondary" id="returnsResetBtn" style="font-size:12px;padding:6px 12px;min-height:auto">Start new round</button>
+      </div>
+      <div id="returnsRoster"></div>
     </div>
   </div>
 </div>
@@ -1091,6 +1164,22 @@ header {
 
 <div class="toast" id="toast"></div>
 
+<!-- QR scanner -->
+<div class="modal-backdrop" id="scanModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Scan QR codes</div>
+      <button class="btn ghost" id="scanClose">Done</button>
+    </div>
+    <div class="scan-stage">
+      <video id="scanVideo" playsinline muted></video>
+      <div class="scan-reticle"></div>
+    </div>
+    <div class="scan-status" id="scanStatus">Point the camera at a test's QR code</div>
+    <div class="scan-recent" id="scanRecent"></div>
+  </div>
+</div>
+
 <script>
 // Rosters live entirely in localStorage. The app starts with no classes — the user
 // creates them via "+ Add a new class" on the landing screen, or imports a CSV.
@@ -1136,6 +1225,7 @@ const LS_ROSTER = (cls) => `seating_roster_v1_${cls}`;
 const LS_CLASS_KEYS = 'seating_class_keys_v1';   // ordered list of class keys present
 const LS_BEHAVIOURS = (cls) => `seating_behaviours_v1_${cls}`;   // per-class incident log
 const LS_BEHAVIOUR_TYPES = 'seating_behaviour_types_v1';        // global, editable category list
+const LS_RETURNS = (cls) => `seating_returns_v1_${cls}`;        // per-class test hand-back list (codes checked off)
 
 // Behaviour categories are GLOBAL (shared across all classes) — the same way overdueDays
 // is global while check-ins are per-class. Each: {id, label, emoji, tone}. tone drives color.
@@ -1202,6 +1292,7 @@ function deleteClass(key) {
   localStorage.removeItem(LS_SAVED(key));
   localStorage.removeItem(LS_CHECKINS(key));
   localStorage.removeItem(LS_BEHAVIOURS(key));
+  localStorage.removeItem(LS_RETURNS(key));
 }
 
 function genStudentCode(existingCodes) {
@@ -1247,6 +1338,11 @@ function removeStudentFromClass(key, code) {
   if (behaviours[code]) {
     delete behaviours[code];
     localStorage.setItem(LS_BEHAVIOURS(key), JSON.stringify(behaviours));
+  }
+  // Test-return check-off (Scanner) is a plain code list — drop them from it
+  const returns = loadReturns(key);
+  if (returns.includes(code)) {
+    localStorage.setItem(LS_RETURNS(key), JSON.stringify(returns.filter(c => c !== code)));
   }
   // Strip from current chart
   const cur = loadCurrent(key);
@@ -1308,6 +1404,12 @@ function changeStudentCode(key, oldCode, newCode) {
     behaviours[newCode] = behaviours[oldCode];
     delete behaviours[oldCode];
     localStorage.setItem(LS_BEHAVIOURS(key), JSON.stringify(behaviours));
+  }
+
+  // Migrate test-return check-off (Scanner) — a plain code list
+  const returns = loadReturns(key);
+  if (returns.includes(oldCode)) {
+    localStorage.setItem(LS_RETURNS(key), JSON.stringify(returns.map(c => c === oldCode ? newCode : c)));
   }
 
   // Migrate current chart
@@ -1420,6 +1522,7 @@ let state = {
   behaviourEntryCode: null,  // student being logged (entry modal / history)
   behaviourEntryType: null,  // selected category id in entry modal
   behaviourQuickCode: null,  // student for the seat-grid quick-pick
+  returns: [],               // codes of students who've handed their test back (Scanner tab)
 };
 
 // ---- Settings ----
@@ -1521,6 +1624,17 @@ function writeSaved(cls, arr) {
   localStorage.setItem(LS_SAVED(cls), JSON.stringify(arr));
 }
 
+// ---- Test hand-back returns (Scanner tab): plain array of student codes ----
+function loadReturns(cls) {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_RETURNS(cls)));
+    return Array.isArray(v) ? v : [];
+  } catch { return []; }
+}
+function persistReturns() {
+  localStorage.setItem(LS_RETURNS(state.activeClass), JSON.stringify(state.returns));
+}
+
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1613,6 +1727,7 @@ function enterClass(cls) {
   state.chart = loadCurrent(cls) || newChart();
   state.checkins = loadCheckins(cls);
   state.behaviours = loadBehaviours(cls);
+  state.returns = loadReturns(cls);
   document.getElementById('landing').style.display = 'none';
   document.getElementById('app').style.display = '';
   render();
@@ -1627,14 +1742,15 @@ function switchClass() {
   state.chart = null;
   state.checkins = {};
   state.behaviours = {};
+  state.returns = [];
   showLanding();
 }
 
 // === Tabs ===
 function setTab(tab) {
   state.activeTab = tab;
-  const views = { seating: 'seatingView', checkins: 'checkinsView', behaviours: 'behavioursView' };
-  const tabs  = { seating: 'tabSeating',  checkins: 'tabCheckins',  behaviours: 'tabBehaviours' };
+  const views = { seating: 'seatingView', checkins: 'checkinsView', behaviours: 'behavioursView', scanner: 'scannerView' };
+  const tabs  = { seating: 'tabSeating',  checkins: 'tabCheckins',  behaviours: 'tabBehaviours',  scanner: 'tabScanner' };
   Object.entries(views).forEach(([k, id]) => {
     document.getElementById(id).style.display = (k === tab) ? '' : 'none';
   });
@@ -1661,9 +1777,11 @@ function render() {
   } else if (state.activeTab === 'checkins') {
     renderCheckinRoster();
     renderBackupBanner();
-  } else {
+  } else if (state.activeTab === 'behaviours') {
     renderBehaviourRoster();
     renderBackupBanner();
+  } else {
+    renderReturnsRoster();
   }
 }
 
@@ -2430,12 +2548,234 @@ function resetBehaviourTypes() {
   toast('Categories reset');
 }
 
+// === Scanner (test hand-back tracking) ===
+
+function isReturned(code) { return state.returns.includes(code); }
+
+function markReturned(code) {
+  // Idempotent; returns true only if this is a newly-added return.
+  if (state.returns.includes(code)) return false;
+  state.returns.push(code);
+  persistReturns();
+  return true;
+}
+
+function toggleReturn(code) {
+  const i = state.returns.indexOf(code);
+  if (i >= 0) state.returns.splice(i, 1); else state.returns.push(code);
+  persistReturns();
+}
+
+function resetReturns() {
+  if (state.returns.length && !confirm('Start a new round? This clears every check-mark for this class so you can track the next test hand-back.')) return;
+  state.returns = [];
+  persistReturns();
+  renderReturnsRoster();
+  toast('New round started');
+}
+
+// Match a scanned QR payload to a student in the active class. The QR encodes the
+// student's id (their code). Tolerant: exact match first, then any digit-run in the
+// payload (handles codes wrapped in extra text like "id:123456" or "A5-123456").
+function findStudentByScan(raw) {
+  const cls = getClass(state.activeClass);
+  if (!cls) return null;
+  const text = String(raw).trim();
+  let s = cls.students.find(st => String(st.code) === text);
+  if (s) return s;
+  const nums = text.match(/\d+/g) || [];
+  for (const n of nums) {
+    s = cls.students.find(st => String(st.code) === n);
+    if (s) return s;
+  }
+  return null;
+}
+
+function renderReturnsRoster() {
+  const cls = getClass(state.activeClass);
+  const container = document.getElementById('returnsRoster');
+  container.innerHTML = '';
+  if (!cls) return;
+  const total = cls.students.length;
+  const returnedSet = new Set(state.returns);
+  const doneN = cls.students.filter(s => returnedSet.has(s.code)).length;
+
+  const pct = total ? Math.round((doneN / total) * 100) : 0;
+  document.getElementById('returnsFill').style.width = pct + '%';
+  document.getElementById('returnsCount').textContent =
+    total ? `${doneN} of ${total} handed back` : 'No students yet';
+
+  if (total === 0) {
+    container.innerHTML = '<div class="hist-empty">No students yet. Add some in Menu → Manage class &amp; roster.</div>';
+    return;
+  }
+  if (doneN === total) {
+    const done = document.createElement('div');
+    done.className = 'returns-alldone';
+    done.textContent = `🎉 All ${total} tests handed back`;
+    container.appendChild(done);
+  }
+
+  // Outstanding first (so the list shrinks as tests come in), then returned, both alphabetical.
+  const outstanding = cls.students.filter(s => !returnedSet.has(s.code));
+  const returned = cls.students.filter(s => returnedSet.has(s.code));
+  [...outstanding, ...returned].forEach(s => {
+    const done = returnedSet.has(s.code);
+    const row = document.createElement('div');
+    row.className = 'return-row' + (done ? ' done' : '');
+    const check = document.createElement('div');
+    check.className = 'return-check';
+    check.textContent = done ? '✓' : '';
+    const name = document.createElement('div');
+    name.className = 'return-name';
+    name.textContent = s.name;
+    row.appendChild(check);
+    row.appendChild(name);
+    row.addEventListener('click', () => { toggleReturn(s.code); renderReturnsRoster(); });
+    container.appendChild(row);
+  });
+}
+
+// ---- QR camera scanning ----
+// jsQR is loaded lazily (only when the scanner is first opened) from the vendored
+// local file, so users who never scan don't pay for the ~130KB decoder.
+let jsQRPromise = null;
+function loadJsQR() {
+  if (window.jsQR) return Promise.resolve(window.jsQR);
+  if (jsQRPromise) return jsQRPromise;
+  jsQRPromise = new Promise((resolve, reject) => {
+    const sc = document.createElement('script');
+    sc.src = 'jsQR.min.js';
+    sc.onload = () => window.jsQR ? resolve(window.jsQR) : reject(new Error('jsQR missing'));
+    sc.onerror = () => { jsQRPromise = null; reject(new Error('load failed')); };
+    document.head.appendChild(sc);
+  });
+  return jsQRPromise;
+}
+
+let scanStream = null, scanRAF = null, scanning = false;
+let scanAudioCtx = null;
+let lastScanData = null, lastScanAt = 0;
+const scanCanvas = document.createElement('canvas');
+const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+
+function setScanStatus(msg, cls) {
+  const el = document.getElementById('scanStatus');
+  el.textContent = msg;
+  el.className = 'scan-status' + (cls ? ' ' + cls : '');
+}
+
+function scanBeep(ok) {
+  try {
+    if (!scanAudioCtx) return;
+    const o = scanAudioCtx.createOscillator(), g = scanAudioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = ok ? 880 : 300;
+    o.connect(g); g.connect(scanAudioCtx.destination);
+    const t = scanAudioCtx.currentTime;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    o.start(t); o.stop(t + 0.15);
+  } catch (e) {}
+}
+
+function addScanRecent(name, newly) {
+  const recent = document.getElementById('scanRecent');
+  const chip = document.createElement('span');
+  chip.className = 'scan-chip' + (newly ? '' : ' dup');
+  chip.textContent = (newly ? '✓ ' : '• ') + name;
+  recent.prepend(chip);
+  while (recent.children.length > 12) recent.removeChild(recent.lastChild);
+}
+
+function handleScan(data) {
+  const now = Date.now();
+  // Debounce: ignore the same payload held in front of the camera for ~2s.
+  if (data === lastScanData && now - lastScanAt < 2000) return;
+  lastScanData = data; lastScanAt = now;
+
+  const s = findStudentByScan(data);
+  const total = rosterCodes().length;
+  if (!s) {
+    setScanStatus('No student with code "' + data + '" in this class', 'bad');
+    scanBeep(false);
+    return;
+  }
+  const newly = markReturned(s.code);
+  const n = state.returns.length;
+  setScanStatus((newly ? '✓ ' : '• already had ') + s.name + '   (' + n + '/' + total + ')', 'good');
+  addScanRecent(s.name, newly);
+  scanBeep(newly);
+  renderReturnsRoster();
+}
+
+function scanTick(jsQRfn) {
+  if (!scanning) return;
+  const video = document.getElementById('scanVideo');
+  if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth) {
+    scanCanvas.width = video.videoWidth;
+    scanCanvas.height = video.videoHeight;
+    scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+    const img = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+    const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+    if (result && result.data) handleScan(result.data);
+  }
+  scanRAF = requestAnimationFrame(() => scanTick(jsQRfn));
+}
+
+async function openScanner() {
+  const cls = getClass(state.activeClass);
+  if (!cls || cls.students.length === 0) { toast('Add students to this class first'); return; }
+  // Prime audio inside the user gesture so beeps work on iOS.
+  try {
+    scanAudioCtx = scanAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (scanAudioCtx.state === 'suspended') scanAudioCtx.resume();
+  } catch (e) { scanAudioCtx = null; }
+
+  lastScanData = null; lastScanAt = 0;
+  document.getElementById('scanRecent').innerHTML = '';
+  setScanStatus('Starting camera…', '');
+  showModal('scanModal');
+
+  let jsQRfn;
+  try { jsQRfn = await loadJsQR(); }
+  catch (e) { setScanStatus('Couldn’t load the scanner. Reconnect to the internet once, then retry.', 'bad'); return; }
+
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } }, audio: false,
+    });
+  } catch (e) {
+    setScanStatus('Camera unavailable — allow camera access, or just tap names to check them off.', 'bad');
+    return;
+  }
+  const video = document.getElementById('scanVideo');
+  video.srcObject = scanStream;
+  video.setAttribute('playsinline', '');
+  video.muted = true;
+  try { await video.play(); } catch (e) {}
+  setScanStatus('Point the camera at a test’s QR code', '');
+  scanning = true;
+  scanTick(jsQRfn);
+}
+
+function closeScanner() {
+  scanning = false;
+  if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  const video = document.getElementById('scanVideo');
+  if (video) video.srcObject = null;
+  hideModal('scanModal');
+  render();
+}
+
 // === Backup / Restore ===
 
 function backupAllData() {
   const payload = {
     app: 'seating-chart',
-    version: 3,
+    version: 4,
     exportedAt: new Date().toISOString(),
     settings: settings,
     behaviourTypes: loadBehaviourTypes(),
@@ -2450,6 +2790,7 @@ function backupAllData() {
       saved: loadSaved(cls),
       checkins: loadCheckins(cls),
       behaviours: loadBehaviours(cls),
+      returns: loadReturns(cls),
     };
   });
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -2493,6 +2834,7 @@ function restoreFromFile(file) {
       if (blob.saved) writeSaved(cls, blob.saved);
       if (blob.checkins) localStorage.setItem(LS_CHECKINS(cls), JSON.stringify(blob.checkins));
       if (blob.behaviours) localStorage.setItem(LS_BEHAVIOURS(cls), JSON.stringify(blob.behaviours));
+      if (Array.isArray(blob.returns)) localStorage.setItem(LS_RETURNS(cls), JSON.stringify(blob.returns));
     });
     // Reload current class data into memory; if active class was removed, drop back to landing
     if (state.activeClass && !getClass(state.activeClass)) {
@@ -2500,6 +2842,7 @@ function restoreFromFile(file) {
       state.chart = null;
       state.checkins = {};
       state.behaviours = {};
+      state.returns = [];
       localStorage.removeItem(LS_ACTIVE);
       showLanding();
       toast('Backup restored');
@@ -2511,6 +2854,7 @@ function restoreFromFile(file) {
       state.chart = loadCurrent(state.activeClass) || newChart();
       state.checkins = loadCheckins(state.activeClass);
       state.behaviours = loadBehaviours(state.activeClass);
+      state.returns = loadReturns(state.activeClass);
     }
     toast('Backup restored');
     render();
@@ -2593,6 +2937,7 @@ function onRemoveStudent(s) {
     state.chart = loadCurrent(rosterContextKey) || newChart();
     state.checkins = loadCheckins(rosterContextKey);
     state.behaviours = loadBehaviours(rosterContextKey);
+    state.returns = loadReturns(rosterContextKey);
   }
   renderRosterList();
   render();
@@ -2665,6 +3010,7 @@ function onSaveStudentEdit() {
     state.chart = loadCurrent(rosterContextKey) || state.chart;
     state.checkins = loadCheckins(rosterContextKey);
     state.behaviours = loadBehaviours(rosterContextKey);
+    state.returns = loadReturns(rosterContextKey);
   }
   hideModal('studentEditModal');
   renderRosterList();
@@ -3301,6 +3647,7 @@ document.getElementById('newClassLabelInput').addEventListener('keydown', (e) =>
 document.getElementById('tabSeating').addEventListener('click', () => setTab('seating'));
 document.getElementById('tabCheckins').addEventListener('click', () => setTab('checkins'));
 document.getElementById('tabBehaviours').addEventListener('click', () => setTab('behaviours'));
+document.getElementById('tabScanner').addEventListener('click', () => setTab('scanner'));
 
 // Check-in flow
 document.getElementById('newCheckinBtn').addEventListener('click', openCheckinPicker);
@@ -3327,6 +3674,16 @@ document.getElementById('behaviourQuickNote').addEventListener('click', () => {
 document.getElementById('behaviourHistoryClose').addEventListener('click', () => hideModal('behaviourHistoryModal'));
 document.getElementById('behaviourHistoryAddBtn').addEventListener('click', () => openBehaviourEntry(state.behaviourEntryCode));
 document.getElementById('backupNowBtnB').addEventListener('click', backupAllData);
+
+// Scanner flow
+document.getElementById('scanQrBtn').addEventListener('click', openScanner);
+document.getElementById('scanClose').addEventListener('click', closeScanner);
+document.getElementById('returnsResetBtn').addEventListener('click', resetReturns);
+// The generic backdrop handler only hides the sheet; for the scanner we must also
+// release the camera, so give it a dedicated backdrop-tap handler.
+document.getElementById('scanModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeScanner();
+});
 
 // Behaviour category manager
 document.getElementById('menuBehaviourTypes').addEventListener('click', () => {
