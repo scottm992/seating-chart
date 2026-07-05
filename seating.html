@@ -630,6 +630,7 @@ header {
 
 .scan-stage { position: relative; background: #000; }
 #scanVideo { width: 100%; max-height: 58vh; object-fit: cover; display: block; background: #000; }
+#scanCapture { width: 100%; max-height: 58vh; object-fit: contain; display: block; background: #000; }
 .scan-reticle {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 55%; aspect-ratio: 1; max-width: 260px;
@@ -1178,10 +1179,12 @@ header {
     <div class="scan-stage">
       <video id="scanVideo" playsinline webkit-playsinline muted autoplay></video>
       <div class="scan-reticle"></div>
+      <img id="scanCapture" alt="captured frame" style="display:none">
     </div>
     <div class="scan-status" id="scanStatus">Point the camera at a test's QR code</div>
     <div class="scan-debug" id="scanDebug"></div>
     <div class="scan-thumb-wrap"><canvas id="scanThumb" width="120" height="120"></canvas><span>what the scanner sees</span></div>
+    <button class="btn secondary" id="scanCaptureBtn" style="margin:0 16px 10px">📸 Capture a frame to send me</button>
     <div class="scan-recent" id="scanRecent"></div>
   </div>
 </div>
@@ -2781,6 +2784,9 @@ async function openScanner() {
 
   lastScanData = null; lastScanAt = 0;
   document.getElementById('scanRecent').innerHTML = '';
+  const cap = document.getElementById('scanCapture');
+  cap.style.display = 'none'; cap.src = '';
+  document.getElementById('scanVideo').style.display = '';
   setScanStatus('Starting camera…', '');
   showModal('scanModal');
 
@@ -2828,8 +2834,28 @@ function closeScanner() {
   if (scanRVFC && video && video.cancelVideoFrameCallback) { video.cancelVideoFrameCallback(scanRVFC); scanRVFC = null; }
   if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
   if (video) video.srcObject = null;
+  const cap = document.getElementById('scanCapture');
+  if (cap) { cap.style.display = 'none'; cap.src = ''; }
+  if (video) video.style.display = '';
   hideModal('scanModal');
   render();
+}
+
+// Diagnostic: freeze and show the current raw camera frame as a saveable image, so it
+// can be sent for inspection / decoded off-device.
+function captureScanFrame() {
+  const video = document.getElementById('scanVideo');
+  if (!video || !video.videoWidth) { toast('Camera not ready yet'); return; }
+  scanning = false;   // freeze the loop
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  const cap = document.getElementById('scanCapture');
+  cap.src = c.toDataURL('image/png');
+  cap.style.display = '';
+  video.style.display = 'none';
+  setScanStatus('Frame captured. Long-press it → Save to Photos, then send it to me. Tap Done to scan again.', '');
 }
 
 // === Backup / Restore ===
@@ -3740,6 +3766,7 @@ document.getElementById('backupNowBtnB').addEventListener('click', backupAllData
 // Scanner flow
 document.getElementById('scanQrBtn').addEventListener('click', openScanner);
 document.getElementById('scanClose').addEventListener('click', closeScanner);
+document.getElementById('scanCaptureBtn').addEventListener('click', captureScanFrame);
 document.getElementById('returnsResetBtn').addEventListener('click', resetReturns);
 // The generic backdrop handler only hides the sheet; for the scanner we must also
 // release the camera, so give it a dedicated backdrop-tap handler.
