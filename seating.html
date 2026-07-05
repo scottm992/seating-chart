@@ -2716,17 +2716,6 @@ function handleScan(data) {
   renderReturnsRoster();
 }
 
-// Decode a sub-rectangle of the video, drawn onto the work canvas at outW×outH.
-// Cropping to the centre and scaling up gives each QR module more pixels, which is
-// what jsQR needs — a small code in a big frame otherwise has sub-pixel modules.
-function decodeRegion(jsQRfn, video, sx, sy, sw, sh, outW, outH) {
-  scanCanvas.width = outW;
-  scanCanvas.height = outH;
-  scanCtx.drawImage(video, sx, sy, sw, sh, 0, 0, outW, outH);
-  const img = scanCtx.getImageData(0, 0, outW, outH);
-  return jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-}
-
 function processFrame(jsQRfn, video) {
   const dbg = document.getElementById('scanDebug');
   if (!(video.videoWidth > 0 && video.readyState >= 2)) {
@@ -2735,27 +2724,32 @@ function processFrame(jsQRfn, video) {
   }
   const vw = video.videoWidth, vh = video.videoHeight;
   scanFrames++;
-  // Decode a CENTRE CROP at native resolution. Downscaling the whole frame blurs an
-  // already-soft camera image, so jsQR can't threshold the modules; a native crop of
-  // the centre — where the aiming box is — stays crisp while being a moderate size
-  // that jsQR locks onto quickly.
+  // The code is often shown on a monitor. Capturing the centre crop 1:1 with smoothing
+  // OFF resolves the screen's sub-pixel grid into moiré that wrecks jsQR's binarizer —
+  // and the thumbnail hides it because a 6x downscale averages the moiré away, so the
+  // code "looks clear" while the pixels jsQR sees are a mesh. So instead: downscale the
+  // crop WITH smoothing (an anti-alias low-pass filter that erases the moiré), onto a
+  // white ground that guarantees the quiet zone jsQR needs if the code is flush.
   const side = Math.min(vw, vh, 720);
   const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
-  scanCanvas.width = side;
-  scanCanvas.height = side;
-  scanCtx.imageSmoothingEnabled = false;
-  scanCtx.drawImage(video, sx, sy, side, side, 0, 0, side, side);
-  const img = scanCtx.getImageData(0, 0, side, side);
-  // Average brightness sample (diagnostic): ~0 would mean an iOS black-frame capture.
-  let sum = 0, cnt = 0;
-  for (let i = 0; i < img.data.length; i += 411 * 4) { sum += img.data[i]; cnt++; }
+  const OUT = 480, PAD = 24;
+  scanCanvas.width = OUT;
+  scanCanvas.height = OUT;
+  scanCtx.imageSmoothingEnabled = true;
+  scanCtx.imageSmoothingQuality = 'high';
+  scanCtx.fillStyle = '#fff';
+  scanCtx.fillRect(0, 0, OUT, OUT);
+  scanCtx.drawImage(video, sx, sy, side, side, PAD, PAD, OUT - 2 * PAD, OUT - 2 * PAD);
+  const img = scanCtx.getImageData(0, 0, OUT, OUT);
+  // Brightness min/max/avg (diagnostic): ~0 avg = black frame; a narrow range = washed out.
+  let sum = 0, cnt = 0, mn = 255, mx = 0;
+  for (let i = 0; i < img.data.length; i += 411 * 4) { const v = img.data[i]; sum += v; cnt++; if (v < mn) mn = v; if (v > mx) mx = v; }
   const lum = Math.round(sum / Math.max(1, cnt));
-  // Standard dark-on-light codes → dontInvert (correct and ~2x faster than attemptBoth).
-  const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+  const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
   // Diagnostic: mirror exactly what jsQR is fed into the on-screen thumbnail.
   const thumb = document.getElementById('scanThumb');
   if (thumb) { thumb.getContext('2d').drawImage(scanCanvas, 0, 0, thumb.width, thumb.height); }
-  if (dbg) dbg.textContent = `frame ${scanFrames} · crop ${side} (of ${vw}×${vh}) · lum ${lum}` +
+  if (dbg) dbg.textContent = `frame ${scanFrames} · ${OUT}px · lum ${lum} [${mn}-${mx}]` +
     (result && result.data ? ` · read "${result.data}"` : '');
   if (result && result.data) handleScan(result.data);
 }
