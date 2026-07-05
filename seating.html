@@ -2670,6 +2670,67 @@ let lastScanData = null, lastScanAt = 0;
 const scanCanvas = document.createElement('canvas');
 const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
 
+// DIAGNOSTIC (remove before merge): a known-good QR encoding "123456" (v1, ECC-M),
+// as a 21x21 module bitmap flattened row-major ('1' = dark). Used by the on-device
+// self-test to prove jsQR can decode on THIS device at all, independent of the camera.
+const SELFTEST_QR_SIZE = 21;
+const SELFTEST_QR_BITS =
+  '111111100001001111111100000100111101000001101110101010001011101101110101000101011101101' +
+  '110101110101011101100000101101001000001111111101010101111111000000001000000000000101111' +
+  '100101001111100001110001111111001111011001101010101101001001101011101111000111110001100' +
+  '010100100010000000001010100100100111111100011010010101100000101000000110110101110101111' +
+  '010010100101110101101111001000101110101110101100000100000100101111001010111111101100100' +
+  '100100';
+let scanSelfTest = '';
+
+// Build the embedded QR as an RGBA Uint8ClampedArray (dark modules black, quiet zone
+// white), with no camera/canvas involved. Returns {data, width, height}.
+function buildSelfTestImage(scale, quiet) {
+  const n = SELFTEST_QR_SIZE, dim = (n + 2 * quiet) * scale;
+  const data = new Uint8ClampedArray(dim * dim * 4).fill(255);
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (SELFTEST_QR_BITS[r * n + c] !== '1') continue;
+      const x0 = (quiet + c) * scale, y0 = (quiet + r) * scale;
+      for (let y = y0; y < y0 + scale; y++) {
+        for (let x = x0; x < x0 + scale; x++) {
+          const i = (y * dim + x) * 4;
+          data[i] = data[i + 1] = data[i + 2] = 0;
+        }
+      }
+    }
+  }
+  return { data, width: dim, height: dim };
+}
+
+// One-shot bisection: can jsQR decode a KNOWN-GOOD QR on THIS device?
+//   A = pure algorithm  (hand-built pixel array → jsQR, no canvas)
+//   B = canvas path     (same pixels through putImageData/getImageData → jsQR)
+// If A fails: jsQR itself is broken/mis-loaded on this device.
+// If A passes but B fails: canvas getImageData mangles pixels on this device.
+// If both pass: jsQR + canvas are fine → the CAMERA-capture path is the culprit.
+function runScanSelfTest(jsQRfn) {
+  let a = 'ERR', b = 'ERR';
+  try {
+    const img = buildSelfTestImage(8, 4);
+    const ra = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+    a = ra && ra.data === '123456' ? 'PASS' : (ra && ra.data ? 'WRONG(' + ra.data + ')' : 'FAIL');
+  } catch (e) { a = 'ERR:' + (e && e.message || e); }
+  try {
+    const img = buildSelfTestImage(8, 4);
+    const cv = document.createElement('canvas');
+    cv.width = img.width; cv.height = img.height;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
+    const got = cx.getImageData(0, 0, img.width, img.height);
+    const rb = jsQRfn(got.data, got.width, got.height, { inversionAttempts: 'attemptBoth' });
+    b = rb && rb.data === '123456' ? 'PASS' : (rb && rb.data ? 'WRONG(' + rb.data + ')' : 'FAIL');
+  } catch (e) { b = 'ERR:' + (e && e.message || e); }
+  scanSelfTest = 'selftest A=' + a + ' B=' + b;
+  try { console.log('[scan]', scanSelfTest); } catch (e) {}
+  return scanSelfTest;
+}
+
 function setScanStatus(msg, cls) {
   const el = document.getElementById('scanStatus');
   el.textContent = msg;
@@ -2755,7 +2816,8 @@ function processFrame(jsQRfn, video) {
   const thumb = document.getElementById('scanThumb');
   if (thumb) { thumb.getContext('2d').drawImage(scanCanvas, 0, 0, thumb.width, thumb.height); }
   if (dbg) dbg.textContent = `frame ${scanFrames} · ${OUT}px · lum ${lum} [${mn}-${mx}]` +
-    (result && result.data ? ` · read "${result.data}"` : '');
+    (result && result.data ? ` · read "${result.data}"` : '') +
+    (scanSelfTest ? ` · ${scanSelfTest}` : '');
   if (result && result.data) handleScan(result.data);
 }
 
@@ -2795,6 +2857,11 @@ async function openScanner() {
   let jsQRfn;
   try { jsQRfn = await loadJsQR(); }
   catch (e) { setScanStatus('Couldn’t load the scanner. Reconnect to the internet once, then retry.', 'bad'); return; }
+
+  // DIAGNOSTIC (remove before merge): prove jsQR can decode on this device at all.
+  runScanSelfTest(jsQRfn);
+  const dbg0 = document.getElementById('scanDebug');
+  if (dbg0) dbg0.textContent = scanSelfTest;
 
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
