@@ -1,13 +1,13 @@
 # Seating Chart Webapp
 
-An HTML webapp for recording where students sit during tests. Designed for phone use, no build step, no backend. The core app is a single self-contained `seating.html`; the Scanner tab additionally uses one vendored QR library file (lazy-loaded on demand).
+An HTML webapp for recording where students sit during tests. Designed for phone use, no build step, no backend. The core app is a single self-contained `seating.html`; the Scanner tab additionally uses a few vendored decoder files (the ZXing WebAssembly QR engine), lazy-loaded on demand.
 
 ## Files
 
-- `seating.html` — the entire app (HTML + CSS + JS + base64 icon, ~140KB)
-- `jsQR.min.js` — vendored QR-decoding library (Apache-2.0), used only by the Scanner tab. Lazy-loaded the first time you open the scanner, so it costs nothing until then.
+- `seating.html` — the entire app (HTML + CSS + JS + base64 icon, ~150KB)
+- `zxing-reader.min.js`, `zxing-share.js`, `zxing_reader.wasm` — the vendored QR decoder (ZXing-C++ compiled to WebAssembly, Apache-2.0), used only by the Scanner tab. Lazy-loaded the first time you open the scanner, so they cost nothing until then, and bundled locally so scanning works offline.
 
-Drop both on any static host (they must sit side by side), or open `seating.html` directly from the filesystem on a phone. Everything except the camera scan works from `file://`; the camera needs an HTTPS origin (e.g. the GitHub Pages URL).
+Drop them all on any static host (they must sit side by side), or open `seating.html` directly from the filesystem on a phone. Everything except the camera scan works from `file://`; the camera needs an HTTPS origin (e.g. the GitHub Pages URL).
 
 ## Four views
 
@@ -286,12 +286,13 @@ Deliberately the lightest of the four data models — no dates, no history, no p
 
 **+ 📷 Scan QR codes** opens a camera sheet. Each test carries a QR code encoding the student's id (their `code`); scanning it checks that student off. The scanner:
 
-- Uses `getUserMedia` (rear camera) + `jsQR` to decode frames continuously, so you can run through a stack without tapping between scans. A short beep and an on-screen "✓ Name (n/N)" confirm each one; the same code held in view is debounced for ~2s.
+- Uses `getUserMedia` (rear camera) + **ZXing** (the ZXing-C++ engine compiled to WebAssembly) to decode frames continuously, so you can run through a stack without tapping between scans. A short beep and an on-screen "✓ Name (n/N)" confirm each one; the same code held in view is debounced for ~2s.
+- Decodes a **downscaled** copy of each frame (~1000px on the long side, tried across a small scale ladder). This matters when the code is shown on a monitor: a full-resolution capture of a screen turns its pixel grid into moiré that defeats decoders, and the anti-aliased downscale averages it out. (The scanner originally used `jsQR`, which couldn't read screen-displayed codes on iOS; ZXing replaced it.)
 - Matches tolerantly: the decoded text is matched to a student code exactly first, then by any digit-run inside it (so `123456`, `id:123456`, or `A5-123456` all resolve). An unmatched code shows a "No student with code …" message and a low buzz.
-- Is **iOS-friendly**: jsQR is bundled locally (iOS Safari has no `BarcodeDetector`), the video is `playsinline muted`, and audio is primed inside the button tap. The camera needs an HTTPS origin — works on the GitHub Pages URL and the home-screen install, not from `file://`.
+- Is **iOS-friendly**: the ZXing engine is bundled locally (iOS Safari has no `BarcodeDetector`), the video is `playsinline muted`, and audio is primed inside the button tap. The camera needs an HTTPS origin — works on the GitHub Pages URL and the home-screen install, not from `file://`.
 - Releases the camera on close (button, backdrop tap, or leaving the sheet). If the camera is unavailable or permission is denied, it says so and you fall back to tapping names.
 
-`jsQR.min.js` is loaded lazily the first time you open the scanner (`loadJsQR()`), so users who never scan never download it.
+The ZXing engine is loaded lazily the first time you open the scanner (`loadZXing()`), so users who never scan never download it.
 
 ### Cascade plumbing
 
