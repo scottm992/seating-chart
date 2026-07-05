@@ -641,6 +641,7 @@ header {
 }
 .scan-status.good { color: #146c2e; }
 .scan-status.bad { color: #b91c1c; }
+.scan-debug { padding: 0 16px 8px; text-align: center; font-size: 11px; color: #8e8e93; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .scan-recent {
   display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px;
   max-height: 92px; overflow-y: auto;
@@ -1172,10 +1173,11 @@ header {
       <button class="btn ghost" id="scanClose">Done</button>
     </div>
     <div class="scan-stage">
-      <video id="scanVideo" playsinline muted></video>
+      <video id="scanVideo" playsinline webkit-playsinline muted autoplay></video>
       <div class="scan-reticle"></div>
     </div>
     <div class="scan-status" id="scanStatus">Point the camera at a test's QR code</div>
+    <div class="scan-debug" id="scanDebug"></div>
     <div class="scan-recent" id="scanRecent"></div>
   </div>
 </div>
@@ -2653,7 +2655,7 @@ function loadJsQR() {
   return jsQRPromise;
 }
 
-let scanStream = null, scanRAF = null, scanning = false;
+let scanStream = null, scanRAF = null, scanning = false, scanFrames = 0;
 let scanAudioCtx = null;
 let lastScanData = null, lastScanAt = 0;
 const scanCanvas = document.createElement('canvas');
@@ -2713,13 +2715,22 @@ function handleScan(data) {
 function scanTick(jsQRfn) {
   if (!scanning) return;
   const video = document.getElementById('scanVideo');
-  if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth) {
+  const dbg = document.getElementById('scanDebug');
+  // Decode as soon as the video has real frame dimensions. iOS live-camera streams
+  // frequently sit below HAVE_ENOUGH_DATA (readyState 4), so gating on that would
+  // mean we never decode — check for actual pixels instead.
+  if (video.videoWidth > 0 && video.readyState >= 2) {
     scanCanvas.width = video.videoWidth;
     scanCanvas.height = video.videoHeight;
     scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
     const img = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-    const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+    const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+    scanFrames++;
+    if (dbg) dbg.textContent = `scanning · frame ${scanFrames} · ${scanCanvas.width}×${scanCanvas.height}` +
+      (result && result.data ? ` · read "${result.data}"` : '');
     if (result && result.data) handleScan(result.data);
+  } else if (dbg) {
+    dbg.textContent = `waiting for camera… readyState ${video.readyState}, ${video.videoWidth}×${video.videoHeight}`;
   }
   scanRAF = requestAnimationFrame(() => scanTick(jsQRfn));
 }
@@ -2751,11 +2762,22 @@ async function openScanner() {
     return;
   }
   const video = document.getElementById('scanVideo');
-  video.srcObject = scanStream;
   video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+  video.setAttribute('autoplay', '');
   video.muted = true;
+  video.playsInline = true;
+  video.srcObject = scanStream;
+  // Wait for the stream to report dimensions before starting the decode loop, but
+  // don't hang forever if the metadata event is slow/absent on iOS.
+  await new Promise(res => {
+    if (video.videoWidth > 0) return res();
+    video.onloadedmetadata = () => res();
+    setTimeout(res, 1500);
+  });
   try { await video.play(); } catch (e) {}
-  setScanStatus('Point the camera at a test’s QR code', '');
+  setScanStatus('Point the camera at a QR code', '');
+  scanFrames = 0;
   scanning = true;
   scanTick(jsQRfn);
 }
