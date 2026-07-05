@@ -2712,6 +2712,17 @@ function handleScan(data) {
   renderReturnsRoster();
 }
 
+// Decode a sub-rectangle of the video, drawn onto the work canvas at outW×outH.
+// Cropping to the centre and scaling up gives each QR module more pixels, which is
+// what jsQR needs — a small code in a big frame otherwise has sub-pixel modules.
+function decodeRegion(jsQRfn, video, sx, sy, sw, sh, outW, outH) {
+  scanCanvas.width = outW;
+  scanCanvas.height = outH;
+  scanCtx.drawImage(video, sx, sy, sw, sh, 0, 0, outW, outH);
+  const img = scanCtx.getImageData(0, 0, outW, outH);
+  return jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+}
+
 function scanTick(jsQRfn) {
   if (!scanning) return;
   const video = document.getElementById('scanVideo');
@@ -2720,14 +2731,22 @@ function scanTick(jsQRfn) {
   // frequently sit below HAVE_ENOUGH_DATA (readyState 4), so gating on that would
   // mean we never decode — check for actual pixels instead.
   if (video.videoWidth > 0 && video.readyState >= 2) {
-    scanCanvas.width = video.videoWidth;
-    scanCanvas.height = video.videoHeight;
-    scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
-    const img = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-    const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+    const vw = video.videoWidth, vh = video.videoHeight;
     scanFrames++;
-    if (dbg) dbg.textContent = `scanning · frame ${scanFrames} · ${scanCanvas.width}×${scanCanvas.height}` +
-      (result && result.data ? ` · read "${result.data}"` : '');
+    // Pass 1: full frame at NATIVE resolution — never downscale, or a small/distant
+    // code loses the pixels-per-module that jsQR needs.
+    let result = decodeRegion(jsQRfn, video, 0, 0, vw, vh, vw, vh);
+    let via = 'full';
+    // Pass 2: a tight centre crop (also native res) focuses jsQR where the aiming box
+    // is, which can pick up a code that background clutter hid in the full frame.
+    if (!(result && result.data)) {
+      const side = Math.floor(Math.min(vw, vh) * 0.6);
+      const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
+      result = decodeRegion(jsQRfn, video, sx, sy, side, side, side, side);
+      via = 'centre';
+    }
+    if (dbg) dbg.textContent = `scanning · frame ${scanFrames} · ${vw}×${vh}` +
+      (result && result.data ? ` · read "${result.data}" (${via})` : '');
     if (result && result.data) handleScan(result.data);
   } else if (dbg) {
     dbg.textContent = `waiting for camera… readyState ${video.readyState}, ${video.videoWidth}×${video.videoHeight}`;
@@ -2755,7 +2774,11 @@ async function openScanner() {
 
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } }, audio: false,
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1920 }, height: { ideal: 1080 },
+      },
+      audio: false,
     });
   } catch (e) {
     setScanStatus('Camera unavailable — allow camera access, or just tap names to check them off.', 'bad');
