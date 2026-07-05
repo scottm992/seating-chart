@@ -2973,21 +2973,82 @@ function closeScanner() {
   render();
 }
 
-// Diagnostic: freeze and show the current raw camera frame as a saveable image, so it
-// can be sent for inspection / decoded off-device.
-function captureScanFrame() {
+// Diagnostic helpers: draw a source canvas scaled to a max dimension, or centre-cropped.
+function dbgScaled(src, maxDim) {
+  const s = Math.min(1, maxDim / Math.max(src.width, src.height));
+  const w = Math.max(1, Math.round(src.width * s)), h = Math.max(1, Math.round(src.height * s));
+  const t = document.createElement('canvas'); t.width = w; t.height = h;
+  const tx = t.getContext('2d', { willReadFrequently: true });
+  tx.imageSmoothingEnabled = true; tx.imageSmoothingQuality = 'high';
+  tx.drawImage(src, 0, 0, w, h);
+  return t;
+}
+function dbgCrop(src, side) {
+  const s = Math.min(src.width, src.height, side);
+  const sx = Math.floor((src.width - s) / 2), sy = Math.floor((src.height - s) / 2);
+  const t = document.createElement('canvas'); t.width = s; t.height = s;
+  t.getContext('2d', { willReadFrequently: true }).drawImage(src, sx, sy, s, s, 0, 0, s, s);
+  return t;
+}
+// Rough sharpness: mean neighbour-gradient on a subsampled grid. High = crisp edges,
+// low = blurry/out-of-focus (which is what defeats every QR decoder).
+function dbgSharpness(cnv) {
+  const w = cnv.width, h = cnv.height;
+  const d = cnv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
+  const step = Math.max(1, Math.floor(Math.max(w, h) / 300));
+  let sum = 0, n = 0;
+  const lum = i => d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
+  for (let y = 0; y + step < h; y += step) for (let x = 0; x + step < w; x += step) {
+    const i = (y * w + x) * 4;
+    sum += Math.abs(lum(i) - lum(i + step * 4)) + Math.abs(lum(i) - lum(i + step * w * 4));
+    n++;
+  }
+  return Math.round(sum / Math.max(1, n));
+}
+// Run BOTH engines on a canvas; returns e.g. "Z:321 J:-".
+async function dbgEngines(cnv) {
+  const img = cnv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, cnv.width, cnv.height);
+  let z = '-', j = '-';
+  try { const r = window.jsQR && window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' }); if (r && r.data) j = r.data; } catch (e) { j = 'err'; }
+  try { if (zxingApi) { const r = await zxingApi.readBarcodes(img, { formats: ['QRCode'], tryHarder: true, maxNumberOfSymbols: 1 }); if (r && r.length) z = r[0].text; } } catch (e) { z = 'err'; }
+  return `Z:${z} J:${j}`;
+}
+
+// Diagnostic: freeze the raw camera frame, show it, and run BOTH decoders against a
+// ladder of scales + a centre crop on-device — so we learn whether ANY software path
+// can read the exact bytes the phone captured. If every variant reads "-", the frame
+// itself is the problem (focus/size/contrast), not the decoder.
+async function captureScanFrame() {
   const video = document.getElementById('scanVideo');
   if (!video || !video.videoWidth) { toast('Camera not ready yet'); return; }
   scanning = false;   // freeze the loop
   const c = document.createElement('canvas');
   c.width = video.videoWidth;
   c.height = video.videoHeight;
-  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  c.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, c.width, c.height);
   const cap = document.getElementById('scanCapture');
   cap.src = c.toDataURL('image/png');
   cap.style.display = '';
   video.style.display = 'none';
-  setScanStatus('Frame captured. Long-press it → Save to Photos, then send it to me. Tap Done to scan again.', '');
+
+  setScanStatus('Decoding the captured frame every way… (screenshot the line below)', '');
+  const dbg = document.getElementById('scanDebug');
+  const variants = [
+    ['native', c],
+    ['ds1500', dbgScaled(c, 1500)],
+    ['ds1000', dbgScaled(c, 1000)],
+    ['ds700', dbgScaled(c, 700)],
+    ['crop1000', dbgCrop(c, 1000)],
+    ['crop600', dbgCrop(c, 600)],
+  ];
+  const lines = [`frame ${c.width}×${c.height} · sharp ${dbgSharpness(c)} · zxing ${zxingReady ? 'ready' : 'NOT ready'}`];
+  for (const [label, cnv] of variants) {
+    lines.push(`${label}(${cnv.width}) ${await dbgEngines(cnv)}`);
+  }
+  const report = lines.join('   |   ');
+  if (dbg) { dbg.style.whiteSpace = 'normal'; dbg.textContent = report; }
+  try { console.log('[scan capture]', report); } catch (e) {}
+  setScanStatus('Capture decode test done — screenshot the line below and send it. Tap Done to scan again.', '');
 }
 
 // === Backup / Restore ===
