@@ -2731,28 +2731,26 @@ function processFrame(jsQRfn, video) {
   }
   const vw = video.videoWidth, vh = video.videoHeight;
   scanFrames++;
-  // Pass 1: full frame at NATIVE resolution — never downscale, or a small/distant
-  // code loses the pixels-per-module that jsQR needs.
-  scanCanvas.width = vw;
-  scanCanvas.height = vh;
-  scanCtx.drawImage(video, 0, 0, vw, vh);
-  const img = scanCtx.getImageData(0, 0, vw, vh);
-  // Sample average brightness — if it's ~0 while the preview shows a scene, iOS handed
-  // us a black frame (the reason a camera can display but canvas capture reads nothing).
+  // jsQR is far faster and MORE reliable at a moderate resolution than on a full
+  // multi-megapixel frame — at ~2MP it grinds (the frame rate visibly drops when a
+  // code is in view) and often fails to lock onto the grid. Downscale the long edge
+  // to ~960px before decoding; a code that fills a reasonable part of the frame keeps
+  // plenty of pixels per module at that size.
+  const TARGET = 960;
+  const scale = Math.min(1, TARGET / Math.max(vw, vh));
+  const w = Math.max(1, Math.round(vw * scale)), h = Math.max(1, Math.round(vh * scale));
+  scanCanvas.width = w;
+  scanCanvas.height = h;
+  scanCtx.drawImage(video, 0, 0, w, h);
+  const img = scanCtx.getImageData(0, 0, w, h);
+  // Average brightness sample (diagnostic): ~0 would mean an iOS black-frame capture.
   let sum = 0, cnt = 0;
-  for (let i = 0; i < img.data.length; i += 997 * 4) { sum += img.data[i]; cnt++; }
+  for (let i = 0; i < img.data.length; i += 411 * 4) { sum += img.data[i]; cnt++; }
   const lum = Math.round(sum / Math.max(1, cnt));
-  let result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-  let via = 'full';
-  // Pass 2: a tight centre crop (native res) in case background clutter hid the code.
-  if (!(result && result.data)) {
-    const side = Math.floor(Math.min(vw, vh) * 0.6);
-    const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
-    result = decodeRegion(jsQRfn, video, sx, sy, side, side, side, side);
-    via = 'centre';
-  }
-  if (dbg) dbg.textContent = `frame ${scanFrames} · ${vw}×${vh} · lum ${lum}` +
-    (result && result.data ? ` · read "${result.data}" (${via})` : '');
+  // Standard dark-on-light codes → dontInvert (correct and ~2x faster than attemptBoth).
+  const result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+  if (dbg) dbg.textContent = `frame ${scanFrames} · ${w}×${h} (of ${vw}×${vh}) · lum ${lum}` +
+    (result && result.data ? ` · read "${result.data}"` : '');
   if (result && result.data) handleScan(result.data);
 }
 
