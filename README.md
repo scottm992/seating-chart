@@ -363,7 +363,7 @@ Storage keys summary:
 
 ## Deployment
 
-Either GitHub Pages, Netlify drop, or any static host. The file is fully self-contained — drop it anywhere that serves HTML and the URL is the deploy.
+Either GitHub Pages, Netlify drop, or any static host. `seating.html` is self-contained — drop it anywhere that serves HTML and the URL is the deploy. If you want the Scanner tab to work, ship the three vendored ZXing files (`zxing-reader.min.js`, `zxing-share.js`, `zxing_reader.wasm`) alongside it; everything else works without them.
 
 For home-screen install: load the deployed URL once, then use the browser's "Add to Home Screen" option. The embedded icon will be used.
 
