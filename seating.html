@@ -2655,7 +2655,7 @@ function loadJsQR() {
   return jsQRPromise;
 }
 
-let scanStream = null, scanRAF = null, scanning = false, scanFrames = 0;
+let scanStream = null, scanRAF = null, scanRVFC = null, scanning = false, scanFrames = 0;
 let scanAudioCtx = null;
 let lastScanData = null, lastScanAt = 0;
 const scanCanvas = document.createElement('canvas');
@@ -2723,35 +2723,53 @@ function decodeRegion(jsQRfn, video, sx, sy, sw, sh, outW, outH) {
   return jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
 }
 
-function scanTick(jsQRfn) {
-  if (!scanning) return;
-  const video = document.getElementById('scanVideo');
+function processFrame(jsQRfn, video) {
   const dbg = document.getElementById('scanDebug');
-  // Decode as soon as the video has real frame dimensions. iOS live-camera streams
-  // frequently sit below HAVE_ENOUGH_DATA (readyState 4), so gating on that would
-  // mean we never decode — check for actual pixels instead.
-  if (video.videoWidth > 0 && video.readyState >= 2) {
-    const vw = video.videoWidth, vh = video.videoHeight;
-    scanFrames++;
-    // Pass 1: full frame at NATIVE resolution — never downscale, or a small/distant
-    // code loses the pixels-per-module that jsQR needs.
-    let result = decodeRegion(jsQRfn, video, 0, 0, vw, vh, vw, vh);
-    let via = 'full';
-    // Pass 2: a tight centre crop (also native res) focuses jsQR where the aiming box
-    // is, which can pick up a code that background clutter hid in the full frame.
-    if (!(result && result.data)) {
-      const side = Math.floor(Math.min(vw, vh) * 0.6);
-      const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
-      result = decodeRegion(jsQRfn, video, sx, sy, side, side, side, side);
-      via = 'centre';
-    }
-    if (dbg) dbg.textContent = `scanning · frame ${scanFrames} · ${vw}×${vh}` +
-      (result && result.data ? ` · read "${result.data}" (${via})` : '');
-    if (result && result.data) handleScan(result.data);
-  } else if (dbg) {
-    dbg.textContent = `waiting for camera… readyState ${video.readyState}, ${video.videoWidth}×${video.videoHeight}`;
+  if (!(video.videoWidth > 0 && video.readyState >= 2)) {
+    if (dbg) dbg.textContent = `waiting for camera… readyState ${video.readyState}, ${video.videoWidth}×${video.videoHeight}`;
+    return;
   }
-  scanRAF = requestAnimationFrame(() => scanTick(jsQRfn));
+  const vw = video.videoWidth, vh = video.videoHeight;
+  scanFrames++;
+  // Pass 1: full frame at NATIVE resolution — never downscale, or a small/distant
+  // code loses the pixels-per-module that jsQR needs.
+  scanCanvas.width = vw;
+  scanCanvas.height = vh;
+  scanCtx.drawImage(video, 0, 0, vw, vh);
+  const img = scanCtx.getImageData(0, 0, vw, vh);
+  // Sample average brightness — if it's ~0 while the preview shows a scene, iOS handed
+  // us a black frame (the reason a camera can display but canvas capture reads nothing).
+  let sum = 0, cnt = 0;
+  for (let i = 0; i < img.data.length; i += 997 * 4) { sum += img.data[i]; cnt++; }
+  const lum = Math.round(sum / Math.max(1, cnt));
+  let result = jsQRfn(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+  let via = 'full';
+  // Pass 2: a tight centre crop (native res) in case background clutter hid the code.
+  if (!(result && result.data)) {
+    const side = Math.floor(Math.min(vw, vh) * 0.6);
+    const sx = Math.floor((vw - side) / 2), sy = Math.floor((vh - side) / 2);
+    result = decodeRegion(jsQRfn, video, sx, sy, side, side, side, side);
+    via = 'centre';
+  }
+  if (dbg) dbg.textContent = `frame ${scanFrames} · ${vw}×${vh} · lum ${lum}` +
+    (result && result.data ? ` · read "${result.data}" (${via})` : '');
+  if (result && result.data) handleScan(result.data);
+}
+
+// Drive the decode loop off requestVideoFrameCallback when available: it fires only
+// once a fresh frame has actually been painted, which avoids iOS's black-frame capture.
+// Falls back to requestAnimationFrame on browsers without rVFC.
+function scanLoop(jsQRfn) {
+  const video = document.getElementById('scanVideo');
+  const hasRVFC = typeof video.requestVideoFrameCallback === 'function';
+  const tick = () => {
+    if (!scanning) return;
+    processFrame(jsQRfn, video);
+    if (hasRVFC) scanRVFC = video.requestVideoFrameCallback(tick);
+    else scanRAF = requestAnimationFrame(tick);
+  };
+  if (hasRVFC) scanRVFC = video.requestVideoFrameCallback(tick);
+  else scanRAF = requestAnimationFrame(tick);
 }
 
 async function openScanner() {
@@ -2802,14 +2820,15 @@ async function openScanner() {
   setScanStatus('Point the camera at a QR code', '');
   scanFrames = 0;
   scanning = true;
-  scanTick(jsQRfn);
+  scanLoop(jsQRfn);
 }
 
 function closeScanner() {
   scanning = false;
   if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
-  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
   const video = document.getElementById('scanVideo');
+  if (scanRVFC && video && video.cancelVideoFrameCallback) { video.cancelVideoFrameCallback(scanRVFC); scanRVFC = null; }
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
   if (video) video.srcObject = null;
   hideModal('scanModal');
   render();
