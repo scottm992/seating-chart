@@ -2670,6 +2670,53 @@ let lastScanData = null, lastScanAt = 0;
 const scanCanvas = document.createElement('canvas');
 const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
 
+// ZXing (WebAssembly) decoder — the real ZXing-C++ engine, far more tolerant of
+// screen moiré, glare, and perspective than jsQR, which the on-device self-test
+// proved is fine on clean images but which fails on this iPhone's real camera
+// frames. Lazy-loaded (ESM) from CDN only when the scanner opens; jsQR remains as
+// a fallback if ZXing can't load (e.g. offline).
+const ZXING_BASE = 'https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.0/dist';
+let zxingApi = null, zxingPromise = null, zxingReady = false, zxingBusy = false;
+let zxStatus = '';
+const zxCanvas = document.createElement('canvas');
+const zxCtx = zxCanvas.getContext('2d', { willReadFrequently: true });
+
+function loadZXing() {
+  if (zxingApi) return Promise.resolve(zxingApi);
+  if (zxingPromise) return zxingPromise;
+  zxingPromise = import(ZXING_BASE + '/es/reader/index.js').then(mod => {
+    mod.prepareZXingModule({
+      overrides: {
+        locateFile: (path, prefix) =>
+          path.endsWith('.wasm') ? ZXING_BASE + '/reader/' + path : prefix + path,
+      },
+      fireImmediately: true,
+    });
+    zxingApi = mod;
+    zxingReady = true;
+    return mod;
+  }).catch(e => { zxingPromise = null; zxStatus = 'ZXing load failed'; throw e; });
+  return zxingPromise;
+}
+
+// Decode the FULL frame (downscaled, aspect kept, no aggressive centre crop so the
+// whole code + quiet zone survive) with ZXing. Async; callers must guard re-entry.
+async function zxingDecodeFrame(video) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw) return null;
+  const scale = Math.min(1, 1000 / Math.max(vw, vh));
+  const w = Math.max(1, Math.round(vw * scale)), h = Math.max(1, Math.round(vh * scale));
+  zxCanvas.width = w; zxCanvas.height = h;
+  zxCtx.imageSmoothingEnabled = true;
+  zxCtx.imageSmoothingQuality = 'high';
+  zxCtx.drawImage(video, 0, 0, w, h);
+  const img = zxCtx.getImageData(0, 0, w, h);
+  const results = await zxingApi.readBarcodes(img, {
+    formats: ['QRCode'], tryHarder: true, maxNumberOfSymbols: 1,
+  });
+  return results && results.length ? results[0].text : null;
+}
+
 // DIAGNOSTIC (remove before merge): a known-good QR encoding "123456" (v1, ECC-M),
 // as a 21x21 module bitmap flattened row-major ('1' = dark). Used by the on-device
 // self-test to prove jsQR can decode on THIS device at all, independent of the camera.
@@ -2816,7 +2863,8 @@ function processFrame(jsQRfn, video) {
   const thumb = document.getElementById('scanThumb');
   if (thumb) { thumb.getContext('2d').drawImage(scanCanvas, 0, 0, thumb.width, thumb.height); }
   if (dbg) dbg.textContent = `frame ${scanFrames} · ${OUT}px · lum ${lum} [${mn}-${mx}]` +
-    (result && result.data ? ` · read "${result.data}"` : '') +
+    (result && result.data ? ` · jsQR read "${result.data}"` : '') +
+    (zxStatus ? ` · ${zxStatus}` : (zxingReady ? '' : ' · ZXing loading…')) +
     (scanSelfTest ? ` · ${scanSelfTest}` : '');
   if (result && result.data) handleScan(result.data);
 }
@@ -2830,6 +2878,16 @@ function scanLoop(jsQRfn) {
   const tick = () => {
     if (!scanning) return;
     processFrame(jsQRfn, video);
+    // ZXing runs async off the same live frames, one decode at a time (guarded so
+    // slow decodes can't pile up). It's the primary decoder; jsQR above is now the
+    // on-screen diagnostic/fallback.
+    if (zxingReady && !zxingBusy && video.videoWidth > 0 && video.readyState >= 2) {
+      zxingBusy = true;
+      zxingDecodeFrame(video).then(text => {
+        zxStatus = text ? `ZXing read "${text}"` : 'ZXing —';
+        if (text && scanning) handleScan(text);
+      }).catch(() => { zxStatus = 'ZXing err'; }).finally(() => { zxingBusy = false; });
+    }
     if (hasRVFC) scanRVFC = video.requestVideoFrameCallback(tick);
     else scanRAF = requestAnimationFrame(tick);
   };
@@ -2862,6 +2920,11 @@ async function openScanner() {
   runScanSelfTest(jsQRfn);
   const dbg0 = document.getElementById('scanDebug');
   if (dbg0) dbg0.textContent = scanSelfTest;
+
+  // Kick off the ZXing engine in parallel with camera startup (don't await — the
+  // loop starts decoding with ZXing as soon as zxingReady flips true).
+  zxStatus = ''; zxingReady = false; zxingBusy = false;
+  loadZXing().catch(() => {});
 
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
