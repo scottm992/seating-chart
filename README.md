@@ -13,7 +13,7 @@ Drop them all on any static host (they must sit side by side), or open `seating.
 
 The app has a tab switcher at the top:
 
-1. **Seating** — the original test-day seat-recording grid (assign students to desks, late/absent status, PNG export).
+1. **Seating** — the original test-day seat-recording grid (assign students to desks, late/absent status, PNG and landscape-PDF export).
 2. **Check-ins** — homework check-in tracking: give a student a mark /4 with a date and note, see their history over time, and spot who's overdue for a touch-base.
 3. **Behaviour** — an incident log: record things you want to track (phone use, long bathroom trips, off-task, a call/email home, a positive) against a student, with a date and optional note. Deliberately the *inverse* of Check-ins — students with recent incidents rise to the top, clean students sink to the bottom, and nothing ever nags you to go log one. See the Behaviours section below.
 4. **Scanner** — test hand-back tracking: after you hand a test back for review, check students off as they return it — by tapping their name, or by scanning the QR code (their student id) on their paper with the camera. A progress bar shows how many of N you've got back. See the Scanner section below.
@@ -163,6 +163,18 @@ See `duplicate` handler on `#menuDuplicate`, plus `datedCopyName(name, saved)` a
 Canvas-based, no library. Renders at 2x DPR. Output includes class banner (colored stripe + label), chart name, timestamp, status summary, the seat grid, the FRONT/BACK markers, and footer lists of all Late and Absent students. Seated late desks carry an orange `L` badge. Seated absent desks mirror the on-screen treatment — drawn white with a dashed red border, red name text and a red `A` badge — so an absence reads at a glance on a printed or projected chart.
 
 Filename format: `<class label> <chart name>.png`.
+
+### PDF export (landscape)
+
+Menu -> **Export as PDF (landscape page)** produces one full landscape Letter page (792 x 612 pt) as a real `.pdf` download -- for printing, clipping to a board, or handing to a substitute teacher. Filename format: `<class label> <chart name>.pdf`.
+
+**No PDF library.** The document is a single image, so the file is a fixed five-object skeleton written by hand in `buildImagePdf()`: catalog, pages, page, a `DCTDecode` (JPEG) XObject, and a content stream that paints it across the whole MediaBox. The only delicate part is the xref table, whose entries must be exactly 20 bytes each and must hold byte-accurate offsets to every object -- hence the running byte count in `put()` rather than string concatenation.
+
+**The page is drawn, not scaled from the PNG.** `renderLandscapeCanvas()` renders at 2.75 canvas pixels per point (~198 DPI, a 2178 x 1683 canvas) with all drawing done in points. A 6-wide by 7-deep room is taller than it is wide, so on landscape paper the grid is limited by page **height**: desks come out ~65 pt (0.91 in) square regardless of how much width is spare. Rather than leave that width as dead margin, a 190 pt side panel carries the Late and Absent lists, and the header runs class label and chart name along the top left with the timestamp and status counts right-aligned.
+
+Desk labels use `fitDeskLabel()`, which shrinks a name from 10 pt down to 7 pt to fit, and only if it still will not fit breaks it into two lines at the space nearest the middle (9 pt down to 6 pt). With the `First L.` naming convention essentially every name renders at the full 10 pt on one line.
+
+Portrait would give roughly 30% larger desks for this room shape, since the grid would then be width-limited rather than height-limited. Landscape is what's implemented; a portrait variant would mean a second page-size constant and moving the side panel back to a footer.
 
 ## State machine summary
 

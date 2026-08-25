@@ -850,6 +850,7 @@ header {
         <li id="menuNew">Start new chart</li>
         <li id="menuLoad">Load saved chart…</li>
         <li id="menuExport">Export as PNG</li>
+        <li id="menuExportPdf">Export as PDF (landscape page)</li>
         <li id="menuSwitchClass">Switch class</li>
         <li id="menuManageRoster">Manage class & roster…</li>
         <li id="menuLayout">Edit room layout…</li>
@@ -3932,6 +3933,11 @@ document.getElementById('menuExport').addEventListener('click', () => {
   exportPNG();
 });
 
+document.getElementById('menuExportPdf').addEventListener('click', () => {
+  hideModal('menuModal');
+  exportLandscapePDF();
+});
+
 function exportPNG() {
   const cell = 130;
   const pad = 50;
@@ -4075,6 +4081,280 @@ function exportPNG() {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 500);
   });
+}
+
+// === Export landscape PDF ===
+//
+// One full landscape Letter page: the chart is drawn to a canvas at print resolution,
+// then wrapped in a hand-rolled PDF. No library is pulled in because the document is a
+// single image, which makes it a fixed five-object skeleton whose only fiddly part is
+// byte-accurate xref offsets.
+//
+// A 6-wide by 7-deep room is taller than it is wide, so on landscape paper the grid is
+// limited by page height rather than width. The width left over carries the late and
+// absent lists in a side panel instead of sitting there as dead margin.
+const PDF_PAGE_W = 792, PDF_PAGE_H = 612;   // Letter landscape, in points
+const PDF_PX = 2.75;                        // canvas pixels per point (~198 DPI)
+
+function renderLandscapeCanvas() {
+  const cls = getClass(state.activeClass);
+  if (!cls) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(PDF_PAGE_W * PDF_PX);
+  canvas.height = Math.round(PDF_PAGE_H * PDF_PX);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(PDF_PX, PDF_PX);   // everything below is expressed in points
+  const font = (weight, size) => weight + ' ' + size + 'px -apple-system, system-ui, sans-serif';
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, PDF_PAGE_W, PDF_PAGE_H);
+
+  const M = 30, panelW = 190, gap = 22;
+
+  // --- Header ---
+  ctx.fillStyle = cls.color;
+  ctx.fillRect(0, 0, PDF_PAGE_W, 8);
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#1d1d1f';
+  ctx.font = font(700, 24);
+  ctx.fillText(cls.label, M, 44);
+  ctx.font = font(600, 15);
+  ctx.fillText(state.chart.name, M, 66);
+
+  const seatedN = Object.keys(state.chart.assignments).length;
+  const lateN = state.chart.late.length;
+  const absN = state.chart.absent.length;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#8e8e93';
+  ctx.font = font(400, 11);
+  ctx.fillText(fmtTime(state.chart.lastModified), PDF_PAGE_W - M, 44);
+  ctx.fillText(seatedN + ' seated  ·  ' + lateN + ' late  ·  ' + absN + ' absent', PDF_PAGE_W - M, 62);
+
+  // --- Grid: as large as the page height allows, centred in whatever width is left
+  // once the side panel is reserved. ---
+  const areaX = M;
+  const areaW = PDF_PAGE_W - M * 2 - panelW - gap;
+  const top = 100, bottom = PDF_PAGE_H - M - 24;
+  const cell = Math.min(areaW / COLS, (bottom - top) / ROWS);
+  const gw = cell * COLS, gh = cell * ROWS;
+  const gx = areaX + (areaW - gw) / 2;
+  const gy = top + ((bottom - top) - gh) / 2;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#8e8e93';
+  ctx.font = font(600, 11);
+  ctx.fillText('BACK', gx + gw / 2, gy - 10);
+  ctx.strokeStyle = '#d1d1d6';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(gx, gy - 5); ctx.lineTo(gx + gw, gy - 5);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  for (let r = 1; r <= ROWS; r++) {
+    for (let c = 1; c <= COLS; c++) {
+      const id = 'r' + r + 'c' + c;
+      if (!SEATS.includes(id)) continue;
+      const x = gx + (c - 1) * cell + 2.5;
+      const y = gy + (r - 1) * cell + 2.5;
+      const w = cell - 5, h = cell - 5;
+      const code = state.chart.assignments[id];
+      if (code == null) {
+        ctx.fillStyle = '#fafafa';
+        ctx.strokeStyle = '#c7c7cc';
+        ctx.lineWidth = 1;
+        roundRect(ctx, x, y, w, h, 5);
+        ctx.fill();
+        ctx.stroke();
+        continue;
+      }
+      const away = isAbsent(code);
+      if (away) {
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, x, y, w, h, 5);
+        ctx.fill();
+        ctx.strokeStyle = '#ff3b30';
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([4, 3]);
+        roundRect(ctx, x, y, w, h, 5);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#b91c1c';
+      } else {
+        ctx.fillStyle = cls.color;
+        roundRect(ctx, x, y, w, h, 5);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+      }
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      fitDeskLabel(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 7);
+      if (away || isLate(code)) {
+        drawBadge(ctx, x + w - 8, y + 8, 6, away ? '#ff3b30' : '#ff9500', away ? 'A' : 'L');
+      }
+    }
+  }
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.strokeStyle = '#1d1d1f';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(gx, gy + gh + 9); ctx.lineTo(gx + gw, gy + gh + 9);
+  ctx.stroke();
+  ctx.fillStyle = '#1d1d1f';
+  ctx.font = font(700, 11);
+  ctx.fillText('FRONT (you)', gx + gw / 2, gy + gh + 24);
+
+  // --- Side panel: the quick who-isn't-here reference ---
+  const namesOf = codes => codes.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b));
+  const panelX = PDF_PAGE_W - M - panelW;
+  let py = 104;
+  py = panelSection(ctx, font, panelX, panelW, py, 'LATE (L)', '#b35900', namesOf(state.chart.late));
+  panelSection(ctx, font, panelX, panelW, py, 'ABSENT (A)', '#b91c1c', namesOf(state.chart.absent));
+
+  return canvas;
+}
+
+function panelSection(ctx, font, x, w, y, title, color, names) {
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#8e8e93';
+  ctx.font = font(700, 9);
+  ctx.fillText(title, x, y);
+  ctx.strokeStyle = '#e5e5ea';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y + 6); ctx.lineTo(x + w, y + 6);
+  ctx.stroke();
+  y += 20;
+  ctx.font = font(400, 10);
+  if (names.length === 0) {
+    ctx.fillStyle = '#c7c7cc';
+    ctx.fillText('None', x, y);
+    return y + 26;
+  }
+  ctx.fillStyle = color;
+  for (const n of names) {
+    if (y > PDF_PAGE_H - 34) { ctx.fillText('...', x, y); break; }
+    ctx.fillText(n, x, y);
+    y += 13;
+  }
+  return y + 16;
+}
+
+// Shrink a name to fit its desk; if it still will not fit, break it at the space
+// nearest the middle rather than shrinking it into illegibility.
+function fitDeskLabel(ctx, text, cx, cy, maxW) {
+  const font = size => '600 ' + size + 'px -apple-system, system-ui, sans-serif';
+  let size = 10;
+  ctx.font = font(size);
+  while (ctx.measureText(text).width > maxW && size > 7) {
+    size -= 0.5;
+    ctx.font = font(size);
+  }
+  if (ctx.measureText(text).width <= maxW) { ctx.fillText(text, cx, cy); return; }
+  const spaces = [];
+  for (let i = 0; i < text.length; i++) if (text[i] === ' ') spaces.push(i);
+  if (spaces.length === 0) { ctx.fillText(text, cx, cy); return; }
+  const target = text.length / 2;
+  let at = spaces[0];
+  spaces.forEach(i => { if (Math.abs(i - target) < Math.abs(at - target)) at = i; });
+  const a = text.slice(0, at), b = text.slice(at + 1);
+  size = 9;
+  ctx.font = font(size);
+  while (Math.max(ctx.measureText(a).width, ctx.measureText(b).width) > maxW && size > 6) {
+    size -= 0.5;
+    ctx.font = font(size);
+  }
+  ctx.fillText(a, cx, cy - size * 0.55);
+  ctx.fillText(b, cx, cy + size * 0.55);
+}
+
+function drawBadge(ctx, x, y, r, bg, ch) {
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 ' + (r * 1.25) + 'px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(ch, x, y + 0.3);
+}
+
+// Wrap one JPEG in a minimal single-page PDF. Byte offsets are tracked as chunks are
+// appended, because the xref table has to point at each object exactly.
+function buildImagePdf(jpeg, imgW, imgH, pageW, pageH) {
+  const LF = String.fromCharCode(10);
+  const XEOL = String.fromCharCode(32, 10);   // keeps every xref entry exactly 20 bytes
+  const chunks = [];
+  const offsets = [0];
+  let len = 0;
+  const put = (data) => {
+    const bytes = typeof data === 'string'
+      ? Uint8Array.from(data, ch => ch.charCodeAt(0) & 0xff)
+      : data;
+    chunks.push(bytes);
+    len += bytes.length;
+  };
+
+  put('%PDF-1.4' + LF);
+  offsets.push(len);
+  put('1 0 obj' + LF + '<< /Type /Catalog /Pages 2 0 R >>' + LF + 'endobj' + LF);
+  offsets.push(len);
+  put('2 0 obj' + LF + '<< /Type /Pages /Kids [3 0 R] /Count 1 >>' + LF + 'endobj' + LF);
+  offsets.push(len);
+  put('3 0 obj' + LF + '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pageW + ' ' + pageH + ']'
+    + ' /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>' + LF + 'endobj' + LF);
+  offsets.push(len);
+  put('4 0 obj' + LF + '<< /Type /XObject /Subtype /Image /Width ' + imgW + ' /Height ' + imgH
+    + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpeg.length
+    + ' >>' + LF + 'stream' + LF);
+  put(jpeg);
+  put(LF + 'endstream' + LF + 'endobj' + LF);
+  const content = 'q' + LF + pageW + ' 0 0 ' + pageH + ' 0 0 cm' + LF + '/Im0 Do' + LF + 'Q' + LF;
+  offsets.push(len);
+  put('5 0 obj' + LF + '<< /Length ' + content.length + ' >>' + LF + 'stream' + LF
+    + content + 'endstream' + LF + 'endobj' + LF);
+
+  const xrefPos = len;
+  let xref = 'xref' + LF + '0 6' + LF + '0000000000 65535 f' + XEOL;
+  for (let i = 1; i <= 5; i++) xref += String(offsets[i]).padStart(10, '0') + ' 00000 n' + XEOL;
+  put(xref);
+  put('trailer' + LF + '<< /Size 6 /Root 1 0 R >>' + LF + 'startxref' + LF + xrefPos + LF + '%%EOF' + LF);
+
+  const out = new Uint8Array(len);
+  let at = 0;
+  chunks.forEach(c => { out.set(c, at); at += c.length; });
+  return new Blob([out], { type: 'application/pdf' });
+}
+
+function exportLandscapePDF() {
+  const cls = getClass(state.activeClass);
+  const canvas = renderLandscapeCanvas();
+  if (!cls || !canvas) return;
+  canvas.toBlob((jpegBlob) => {
+    if (!jpegBlob) { toast('Could not build the PDF'); return; }
+    jpegBlob.arrayBuffer().then(buf => {
+      const blob = buildImagePdf(new Uint8Array(buf), canvas.width, canvas.height, PDF_PAGE_W, PDF_PAGE_H);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safe = (cls.label + ' ' + state.chart.name).replace(/[^a-z0-9-_ ]/gi, '_');
+      a.download = safe + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+      toast('PDF downloaded');
+    });
+  }, 'image/jpeg', 0.92);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
