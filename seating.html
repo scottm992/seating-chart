@@ -386,11 +386,15 @@ header {
 .seat-toolbar {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
-.seat-toolbar .btn { font-size: 13px; padding: 8px 14px; }
+/* Tuned so all three buttons sit on one row at 375px rather than wrapping and
+   eating vertical space above the grid. */
+.seat-toolbar .btn { font-size: 12px; padding: 8px 10px; }
+.seat-toolbar .btn.clear { background: #ffeaea; color: #b91c1c; }
+.seat-toolbar .btn.clear:active { background: #ffd9d9; }
 
 /* Roster manager */
 .roster-toolbar {
@@ -709,7 +713,8 @@ header {
   <div class="container view" id="seatingView">
     <div class="seat-toolbar">
       <button class="btn secondary" id="checkinNextBtn">📋 Check in next</button>
-      <button class="btn secondary" id="randomFillBtn">🎲 Randomize seats</button>
+      <button class="btn secondary" id="randomFillBtn">🎲 Randomize</button>
+      <button class="btn clear" id="clearSeatsBtn">🧹 Clear seats</button>
     </div>
     <div class="classroom">
       <div class="back-label">BACK</div>
@@ -857,7 +862,6 @@ header {
         <li id="menuRestore">⬆ Restore from backup…</li>
         <li id="menuCheckinSettings">Check-in settings</li>
         <li id="menuBehaviourTypes">Behaviour categories</li>
-        <li id="menuReset" class="danger">Clear all seats</li>
       </ul>
     </div>
   </div>
@@ -3703,15 +3707,29 @@ document.getElementById('menuSwitchClass').addEventListener('click', () => {
   switchClass();
 });
 
-document.getElementById('menuReset').addEventListener('click', () => {
-  hideModal('menuModal');
-  if (!confirm('Clear all seats, late and absent for the current chart?')) return;
+function clearSeats() {
+  const seated = Object.keys(state.chart.assignments).length;
+  const lateN = state.chart.late.length;
+  const absN = state.chart.absent.length;
+  if (seated === 0 && lateN === 0 && absN === 0) { toast('Nothing to clear'); return; }
+  const plural = (n, word) => n + ' ' + word + (n === 1 ? '' : 's');
+  const bits = [];
+  if (seated > 0) bits.push(plural(seated, 'seat'));
+  if (lateN > 0) bits.push(plural(lateN, 'late flag'));
+  if (absN > 0) bits.push(plural(absN, 'absent flag'));
+  const msg = `Clear ${bits.join(', ')} from "${state.chart.name}"?
+
+The roster, check-ins and behaviours are not affected. This cannot be undone.`;
+  if (!confirm(msg)) return;
   state.chart.assignments = {};
-  state.chart.absent = [];
   state.chart.late = [];
+  state.chart.absent = [];
   persistCurrent();
   render();
-});
+  toast('Seats cleared');
+}
+
+document.getElementById('clearSeatsBtn').addEventListener('click', clearSeats);
 
 document.getElementById('randomFillBtn').addEventListener('click', randomFill);
 document.getElementById('checkinNextBtn').addEventListener('click', startOverdueCheckin);
