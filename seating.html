@@ -162,7 +162,8 @@ header {
   color: white;
   border-color: var(--accent, #1d1d1f);
 }
-.seat.late-flag::after {
+.seat.late-flag::after,
+.seat.absent-flag::after {
   content: 'L';
   position: absolute;
   top: 2px; right: 2px;
@@ -177,6 +178,18 @@ header {
   justify-content: center;
   border: 1.5px solid white;
   line-height: 1;
+}
+/* An absent student keeps their desk, but the desk reads as vacated: white with a
+   dashed red edge, so one glance at the grid shows who isn't in the room. */
+.seat.absent-flag::after {
+  content: 'A';
+  background: #ff3b30;
+}
+.seat.filled.absent-flag {
+  background: #fff;
+  color: #b91c1c;
+  border-color: #ff3b30;
+  border-style: dashed;
 }
 .seat.empty-slot { visibility: hidden; pointer-events: none; }
 
@@ -833,6 +846,7 @@ header {
       <ul class="action-list">
         <li id="menuRename">Rename current chart</li>
         <li id="menuSave">Save current chart</li>
+        <li id="menuDuplicate">Copy chart to today's date</li>
         <li id="menuNew">Start new chart</li>
         <li id="menuLoad">Load saved chart…</li>
         <li id="menuExport">Export as PNG</li>
@@ -1799,13 +1813,13 @@ function renderHeader() {
 
   document.getElementById('chartName').textContent = state.chart.name;
   const seated = Object.values(state.chart.assignments).length;
-  const seatedLate = Object.values(state.chart.assignments).filter(c => state.chart.late.includes(c)).length;
   const regularUns = regularUnseatedCodes().length;
-  const lateUns = lateUnseatedCodes().length;
-  const absent = state.chart.absent.length;
-  const seatedStr = seatedLate > 0 ? `${seated} seated (${seatedLate} late)` : `${seated} seated`;
+  // Late and absent are flags, not places: a flagged student may or may not be
+  // seated, so these are whole-chart totals rather than unseated-only counts.
+  const lateN = state.chart.late.length;
+  const absentN = state.chart.absent.length;
   document.getElementById('chartMeta').textContent =
-    `${seatedStr} · ${regularUns} unseated · ${lateUns} late · ${absent} absent`;
+    `${seated} seated · ${regularUns} unseated · ${lateN} late · ${absentN} absent`;
 }
 
 function renderGrid() {
@@ -1826,6 +1840,7 @@ function renderGrid() {
       if (code != null) {
         div.classList.add('filled');
         if (isLate(code)) div.classList.add('late-flag');
+        if (isAbsent(code)) div.classList.add('absent-flag');
         div.textContent = nameByCode(code);
       }
       div.addEventListener('click', () => onSeatTap(id));
@@ -1839,6 +1854,9 @@ function isSeated(code) {
 }
 function isLate(code) {
   return state.chart.late.includes(code);
+}
+function isAbsent(code) {
+  return state.chart.absent.includes(code);
 }
 function regularUnseatedCodes() {
   // Not seated, not absent, not late
@@ -1855,10 +1873,10 @@ function lateUnseatedCodes() {
     .sort((a, b) => nameByCode(a).localeCompare(nameByCode(b)));
 }
 function seatableCodes() {
-  // Not seated, not absent (includes unseated late). Alphabetical (roster is pre-sorted).
+  // Anyone not already at a desk. Late and absent students are included (and badged
+  // in the picker) so a desk can be held for someone who isn't in the room.
   const placed = new Set(Object.values(state.chart.assignments));
-  const absent = new Set(state.chart.absent);
-  return rosterCodes().filter(c => !placed.has(c) && !absent.has(c));
+  return rosterCodes().filter(c => !placed.has(c));
 }
 
 function renderUnseated() {
@@ -3368,12 +3386,14 @@ function randomFill() {
     if (i < seats.length) state.chart.assignments[seats[i]] = code;
   });
   const leftover = placeable.length - seats.length;
+  const skipped = state.chart.absent.length;
   persistCurrent();
   render();
   if (leftover > 0) {
     toast(`Seated ${seats.length}; ${leftover} couldn't fit`);
   } else {
-    toast(`Seated ${placeable.length} student${placeable.length === 1 ? '' : 's'}`);
+    toast(`Seated ${placeable.length} student${placeable.length === 1 ? '' : 's'}`
+      + (skipped > 0 ? `; ${skipped} absent left out` : ''));
   }
 }
 
@@ -3439,10 +3459,13 @@ function renderPickerList(filter) {
     const nameSpan = document.createElement('span');
     nameSpan.textContent = nameByCode(code);
     li.appendChild(nameSpan);
-    if (isLate(code)) {
+    if (isLate(code) || isAbsent(code)) {
+      const away = isAbsent(code);
       const badge = document.createElement('span');
-      badge.textContent = 'LATE';
-      badge.style.cssText = 'color:#b35900;background:#fff4e5;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;border:1px solid #ffb340;letter-spacing:0.5px;';
+      badge.textContent = away ? 'ABSENT' : 'LATE';
+      badge.style.cssText = away
+        ? 'color:#b91c1c;background:#ffeaea;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;border:1px solid #ff6b63;letter-spacing:0.5px;'
+        : 'color:#b35900;background:#fff4e5;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;border:1px solid #ffb340;letter-spacing:0.5px;';
       li.appendChild(badge);
     }
     li.addEventListener('click', () => pickStudent(code));
@@ -3463,6 +3486,8 @@ function openSeatAction(seatId) {
   document.getElementById('actionTitle').textContent = nameByCode(code);
   document.getElementById('actionLate').textContent =
     isLate(code) ? 'Remove late flag' : 'Mark as late';
+  document.getElementById('actionAbsent').textContent =
+    isAbsent(code) ? 'Remove absent flag' : 'Mark absent';
   showModal('actionModal');
 }
 
@@ -3483,6 +3508,8 @@ document.getElementById('actionLate').addEventListener('click', () => {
     state.chart.late = state.chart.late.filter(c => c !== code);
   } else {
     state.chart.late.push(code);
+    // Late and absent are mutually exclusive
+    state.chart.absent = state.chart.absent.filter(c => c !== code);
   }
   persistCurrent();
   hideModal('actionModal');
@@ -3490,12 +3517,17 @@ document.getElementById('actionLate').addEventListener('click', () => {
 });
 
 document.getElementById('actionAbsent').addEventListener('click', () => {
-  const seatId = state.actionSeat;
-  const code = state.chart.assignments[seatId];
-  delete state.chart.assignments[seatId];
-  // Absent and late are mutually exclusive
-  state.chart.late = state.chart.late.filter(c => c !== code);
-  if (!state.chart.absent.includes(code)) state.chart.absent.push(code);
+  const code = state.chart.assignments[state.actionSeat];
+  // Toggle the absent flag and leave the student at their desk. Keeping the seat
+  // means the arrangement survives the absence, and a student who turns up part
+  // way through the period is already placed.
+  if (isAbsent(code)) {
+    state.chart.absent = state.chart.absent.filter(c => c !== code);
+  } else {
+    state.chart.absent.push(code);
+    // Absent and late are mutually exclusive
+    state.chart.late = state.chart.late.filter(c => c !== code);
+  }
   persistCurrent();
   hideModal('actionModal');
   render();
@@ -3546,13 +3578,22 @@ function onLateChipTap(code) {
 }
 
 function onAbsentChipTap(code) {
-  buildChipActions(code, [
-    { label: 'Move to unseated', fn: () => { state.chart.absent = state.chart.absent.filter(c => c !== code); } },
+  const actions = [
+    { label: 'Remove absent flag', fn: () => { state.chart.absent = state.chart.absent.filter(c => c !== code); } },
     { label: 'Mark late instead', cls: 'warn', fn: () => {
       state.chart.absent = state.chart.absent.filter(c => c !== code);
       state.chart.late.push(code);
     } },
-  ]);
+  ];
+  // Only worth offering if they're actually holding a desk.
+  if (isSeated(code)) {
+    actions.push({ label: 'Free their desk (stay absent)', cls: 'danger', fn: () => {
+      Object.keys(state.chart.assignments).forEach(seat => {
+        if (state.chart.assignments[seat] === code) delete state.chart.assignments[seat];
+      });
+    } });
+  }
+  buildChipActions(code, actions);
 }
 
 // === Modal helpers ===
@@ -3591,15 +3632,53 @@ document.getElementById('renameSave').addEventListener('click', () => {
   hideModal('renameModal');
 });
 
+// Save-or-update the current chart inside `saved` (mutates and returns it). Shared by
+// "Save current chart" and the dated copy, which preserves what you're leaving.
+function upsertCurrentInto(saved) {
+  state.chart.lastModified = new Date().toISOString();
+  const snapshot = JSON.parse(JSON.stringify(state.chart));
+  const idx = saved.findIndex(c => c.id === state.chart.id);
+  if (idx >= 0) saved[idx] = snapshot;
+  else saved.unshift(snapshot);
+  return saved;
+}
+
 document.getElementById('menuSave').addEventListener('click', () => {
   hideModal('menuModal');
-  const saved = loadSaved(state.activeClass);
-  state.chart.lastModified = new Date().toISOString();
-  const idx = saved.findIndex(c => c.id === state.chart.id);
-  if (idx >= 0) saved[idx] = JSON.parse(JSON.stringify(state.chart));
-  else saved.unshift(JSON.parse(JSON.stringify(state.chart)));
-  writeSaved(state.activeClass, saved);
+  writeSaved(state.activeClass, upsertCurrentInto(loadSaved(state.activeClass)));
   toast('Chart saved');
+});
+
+// "Unit 3 Test 2026-07-04" copied today becomes "Unit 3 Test 2026-08-25" rather than
+// stacking dates on the end. A numeric suffix separates two copies made the same day.
+function datedCopyName(name, saved) {
+  const base = String(name || '').replace(/\s*\d{4}-\d{2}-\d{2}(\s*\(\d+\))?\s*$/, '').trim() || 'Chart';
+  const taken = new Set(saved.map(c => c.name));
+  let candidate = `${base} ${todayStr()}`;
+  let n = 2;
+  while (taken.has(candidate)) candidate = `${base} ${todayStr()} (${n++})`;
+  return candidate;
+}
+
+document.getElementById('menuDuplicate').addEventListener('click', () => {
+  hideModal('menuModal');
+  // Save the chart we're leaving first, so switching to the copy can't discard it.
+  const saved = upsertCurrentInto(loadSaved(state.activeClass));
+  const copy = JSON.parse(JSON.stringify(state.chart));
+  copy.id = uid();
+  copy.name = datedCopyName(state.chart.name, saved);
+  copy.createdAt = new Date().toISOString();
+  copy.lastModified = new Date().toISOString();
+  // A copy is for a new day: keep the seating, start attendance clean so yesterday's
+  // absences can't be mistaken for today's.
+  copy.late = [];
+  copy.absent = [];
+  saved.unshift(copy);
+  writeSaved(state.activeClass, saved);
+  state.chart = copy;
+  persistCurrent();
+  render();
+  toast(`Now editing "${copy.name}"`);
 });
 
 document.getElementById('menuNew').addEventListener('click', () => {
@@ -3911,17 +3990,32 @@ function exportPNG() {
       const h = cell - 12;
       const code = state.chart.assignments[id];
       if (code != null) {
-        ctx.fillStyle = cls.color;
-        roundRect(ctx, x, y, w, h, 10);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
+        const away = isAbsent(code);
+        if (away) {
+          // Same read as on screen: an empty-looking desk that still says whose it is.
+          ctx.fillStyle = '#ffffff';
+          roundRect(ctx, x, y, w, h, 10);
+          ctx.fill();
+          ctx.strokeStyle = '#ff3b30';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 4]);
+          roundRect(ctx, x, y, w, h, 10);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#b91c1c';
+        } else {
+          ctx.fillStyle = cls.color;
+          roundRect(ctx, x, y, w, h, 10);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+        }
         wrapText(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 12);
-        // Late marker
-        if (isLate(code)) {
+        // Late / absent marker
+        if (isLate(code) || away) {
           const dotR = 10;
           const dotX = x + w - dotR - 4;
           const dotY = y + dotR + 4;
-          ctx.fillStyle = '#ff9500';
+          ctx.fillStyle = away ? '#ff3b30' : '#ff9500';
           ctx.beginPath();
           ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
           ctx.fill();
@@ -3932,7 +4026,7 @@ function exportPNG() {
           ctx.font = '700 11px -apple-system, system-ui, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('L', dotX, dotY + 0.5);
+          ctx.fillText(away ? 'A' : 'L', dotX, dotY + 0.5);
         }
       } else {
         ctx.fillStyle = '#fafafa';
@@ -3967,7 +4061,7 @@ function exportPNG() {
   if (state.chart.absent.length > 0) {
     ctx.fillStyle = '#b91c1c';
     const names = state.chart.absent.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b)).join(', ');
-    ctx.fillText('Absent: ' + names, W / 2, lineY);
+    ctx.fillText('Absent (A): ' + names, W / 2, lineY);
   }
 
   canvas.toBlob((blob) => {

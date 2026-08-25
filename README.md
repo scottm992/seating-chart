@@ -111,16 +111,19 @@ A student is in exactly one of these states for a given chart:
 | Seated   | `chart.assignments[seatId] = code` | (already is)   | May also have late flag                           |
 | Unseated | (none — derived)           | yes            | Default state                                     |
 | Late     | `chart.late: [code, ...]`  | yes            | A **flag**, not a bucket. Can co-exist with seated|
-| Absent   | `chart.absent: [code, ...]`| no             | Mutually exclusive with everything else           |
+| Absent   | `chart.absent: [code, ...]`| yes            | A **flag** too. Mutually exclusive with late      |
 
-Important: **late is a flag**, not a bucket. A late student can be either seated (shows L badge on their desk) or unseated (appears in the Late section AND in the seat picker with a LATE badge). Absent students can never be seated and never appear in the picker.
+Important: **late and absent are both flags**, not buckets. Either can apply to a student who is seated or unseated. A flagged student who is seated keeps their desk and shows a badge on it (orange `L`, red `A`); a flagged student who is unseated appears in the Late/Absent section AND in the seat picker with a matching badge, so a desk can still be held for someone who isn't in the room.
+
+Marking a seated student absent deliberately **does not** free their desk. The arrangement is usually the thing worth preserving — it survives the absence, it's still correct tomorrow, and a student who turns up part way through the period is already placed. "Free their desk (stay absent)" on the Absent chip is the explicit opt-out when you do want the desk back.
 
 Helper functions:
 - `isSeated(code)` — student is currently assigned to a desk
 - `isLate(code)` — student has the late flag (regardless of seated/unseated)
+- `isAbsent(code)` — student has the absent flag (regardless of seated/unseated)
 - `regularUnseatedCodes()` — not seated, not absent, not late (the "Unseated" section)
 - `lateUnseatedCodes()` — late AND not seated (the "Late" section; alphabetical)
-- `seatableCodes()` — not seated, not absent (the picker list; includes unseated late)
+- `seatableCodes()` — simply not seated (the picker list; late and absent students are included, badged)
 
 ### Charts
 
@@ -145,9 +148,19 @@ Each class has independent storage:
 
 All storage is `localStorage`, scoped per browser per device. Charts saved on Scott's phone don't appear on his laptop.
 
+**Copying a chart for a new day** — Menu → **Copy chart to today's date** duplicates the chart you're looking at and switches you to the copy, so a good arrangement can be reused without overwriting the record of the day it was built for. Specifically it:
+
+1. Saves the chart you're leaving into the saved list first (upsert by `id`), so switching away can never discard it.
+2. Deep-copies it with a fresh `id`, `createdAt`, and `lastModified`.
+3. Renames it with today's date, **replacing** any trailing date rather than stacking one on the end — `Unit 3 Test 2026-07-04` becomes `Unit 3 Test 2026-08-25`, not `Unit 3 Test 2026-07-04 2026-08-25`. Two copies on the same day get ` (2)`, ` (3)`, and so on.
+4. **Clears `late` and `absent`.** The seating is what you wanted to reuse; carrying yesterday's attendance into a new day would be actively wrong, and a stale absence is easy to miss.
+5. Saves the copy and makes it the current chart.
+
+See `duplicate` handler on `#menuDuplicate`, plus `datedCopyName(name, saved)` and `upsertCurrentInto(saved)` (shared with "Save current chart").
+
 ### PNG export
 
-Canvas-based, no library. Renders at 2x DPR. Output includes class banner (colored stripe + label), chart name, timestamp, status summary, the seat grid (with L badge on seated late desks), the FRONT/BACK markers, and footer lists of all Late and Absent students.
+Canvas-based, no library. Renders at 2x DPR. Output includes class banner (colored stripe + label), chart name, timestamp, status summary, the seat grid, the FRONT/BACK markers, and footer lists of all Late and Absent students. Seated late desks carry an orange `L` badge. Seated absent desks mirror the on-screen treatment — drawn white with a dashed red border, red name text and a red `A` badge — so an absence reads at a glance on a printed or projected chart.
 
 Filename format: `<class label> <chart name>.png`.
 
@@ -155,17 +168,19 @@ Filename format: `<class label> <chart name>.png`.
 
 Tap targets and their resulting actions:
 
-- **Randomize seats button** (above the grid) → places every present (non-absent) student into seats at random, filling **front-first**: the front row (row 7, closest to the teacher) fills first, then back toward row 1. Clears the existing arrangement (confirms first if seats are already assigned). Late flags are preserved (stored separately from assignments), so a late student keeps their L badge wherever they land. If there are more students than seats, the overflow stays unseated and a toast reports it; if fewer, the empty desks are at the back. See `randomFill()`, `frontFirstSeats()`, `shuffled()` (Fisher–Yates).
+- **Randomize seats button** (above the grid) → places every present (non-absent) student into seats at random. Absent students are deliberately left out so the room isn't reserved for people who aren't in it — this is the one place an absence costs a desk, and the toast says how many were skipped. Seats fill **front-first**: the front row (row 7, closest to the teacher) fills first, then back toward row 1. Clears the existing arrangement (confirms first if seats are already assigned). Late flags are preserved (stored separately from assignments), so a late student keeps their L badge wherever they land. If there are more students than seats, the overflow stays unseated and a toast reports it; if fewer, the empty desks are at the back. See `randomFill()`, `frontFirstSeats()`, `shuffled()` (Fisher–Yates).
 - **Check in next button** (beside Randomize seats) → surfaces the student you've gone longest without checking in with and opens the check-in entry modal for them directly from the Seating tab — a fast "who's next" prompt. Never-checked-in students are treated as most overdue; ties are broken at random (so it naturally rotates through them as you log each). Recency uses all check-ins, including note-only touch-bases, matching the Check-ins roster sort. See `pickOverdueCheckinCode()` and `startOverdueCheckin()`.
 - **Empty desk** → opens picker → tap student → seats them (with late flag preserved if applicable)
 - **Filled desk** → opens action sheet:
   - Swap — clears desk, reopens picker for same desk
   - Mark as late / Remove late flag — toggles the flag, student stays seated
-  - Mark absent — unseats, removes late flag, adds to absent
+  - Mark absent / Remove absent flag — toggles the flag, student stays seated
   - Clear seat — unseats, keeps current status (late stays late, otherwise becomes unseated)
 - **Unseated chip** → Mark late / Mark absent
 - **Late chip** (unseated late student) → Move to unseated (remove late flag) / Mark absent instead
-- **Absent chip** → Move to unseated / Mark late instead (also unseats by definition since they weren't seated)
+- **Absent chip** → Remove absent flag / Mark late instead / Free their desk (stay absent) — the last only appears if they're actually holding one
+
+Marking late clears absent and vice versa; the two flags are mutually exclusive in both directions.
 
 ## Check-ins (homework tracking)
 
