@@ -117,10 +117,13 @@ Important: **late and absent are both flags**, not buckets. Either can apply to 
 
 Marking a seated student absent deliberately **does not** free their desk. The arrangement is usually the thing worth preserving — it survives the absence, it's still correct tomorrow, and a student who turns up part way through the period is already placed. "Free their desk (stay absent)" on the Absent chip is the explicit opt-out when you do want the desk back.
 
+The seating grid also shows a **third, derived marker**: a student who is overdue for a homework check-in gets a purple `!` badge in the desk's **top-left** corner. It sits opposite the late/absent badge deliberately, because the two are independent — a student can be seated, late, and overdue all at once. This one is not chart state at all; it's computed live from the check-in ledger, so it appears and disappears as you log check-ins and it differs between two charts opened on different days. It is **screen-only** — the PDF export stays a clean record of the day and carries no student-tracking marks.
+
 Helper functions:
 - `isSeated(code)` — student is currently assigned to a desk
 - `isLate(code)` — student has the late flag (regardless of seated/unseated)
 - `isAbsent(code)` — student has the absent flag (regardless of seated/unseated)
+- `isOverdueForCheckin(code, now)` — never checked in, or last contact >= `settings.overdueDays` ago. The same rule that reddens the Check-ins roster meta line, so grid and roster never disagree. `renderGrid()` passes a single `now` so every desk is judged against one timestamp.
 - `regularUnseatedCodes()` — not seated, not absent, not late (the "Unseated" section)
 - `lateUnseatedCodes()` — late AND not seated (the "Late" section; alphabetical)
 - `seatableCodes()` — simply not seated (the picker list; late and absent students are included, badged)
@@ -188,6 +191,8 @@ Tap targets and their resulting actions:
 - **Check in next button** (beside Randomize seats) → surfaces the student you've gone longest without checking in with and opens the check-in entry modal for them directly from the Seating tab — a fast "who's next" prompt. Never-checked-in students are treated as most overdue; ties are broken at random (so it naturally rotates through them as you log each). Recency uses all check-ins, including note-only touch-bases, matching the Check-ins roster sort. See `pickOverdueCheckinCode()` and `startOverdueCheckin()`.
 - **Empty desk** → opens picker → tap student → seats them (with late flag preserved if applicable)
 - **Filled desk** → opens action sheet:
+  - 📝 Log behaviour — one-tap category picker
+  - 📋 Log check-in — opens the check-in entry form for that student; the label reads "(overdue)" when they are. Saving repaints the grid, so the `!` badge clears immediately and you stay on the Seating tab
   - Swap — clears desk, reopens picker for same desk
   - Mark as late / Remove late flag — toggles the flag, student stays seated
   - Mark absent / Remove absent flag — toggles the flag, student stays seated
@@ -384,8 +389,7 @@ Storage keys summary:
 
 - **Cloud sync / auto-backup** — the JSON export/import is the manual durability story. A natural next step (good candidate for the Cowork environment, where Google Drive is connected) is a "Save to Drive / Load from Drive" button, or a scheduled auto-backup, so durability doesn't depend on remembering to export.
 - **Per-class room layouts** — the layout is now editable in-app (Menu → Edit room layout) but is global; making it per-class would mean storing the desk-id list inside each roster object instead of the single `seating_layout_v1` key
-- **Tie check-ins to seating (optional)** — currently fully separate per the design; a "log a check-in" action could be added to the seat action sheet if desired. (Behaviours already do this — the seat action sheet has a 📝 Log behaviour quick path.)
-- **Check-in reminders** — surface overdue students more proactively (e.g. a count badge on the Check-ins tab)
+- **Check-in count badge on the tab** — the seat grid now flags overdue students with a `!` badge and the roster sorts them to the top, but nothing surfaces a count until you open a tab
 - **Reorderable behaviour categories** — drag-to-reorder in the category manager (deferred from the initial behaviours build; fiddly on mobile, low urgency)
 - **CSV export of check-ins / behaviours** for gradebook or documentation import
 - **Per-behaviour summaries** — e.g. a count badge on the Behaviour tab, or a class-wide "this week" rollup by category

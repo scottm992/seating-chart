@@ -191,6 +191,24 @@ header {
   border-color: #ff3b30;
   border-style: dashed;
 }
+/* Overdue for a check-in. Sits in the opposite corner from the late/absent badge
+   because the two are independent: a student can carry both at the same time. */
+.seat.checkin-due::before {
+  content: '!';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: #5856d6;
+  color: white;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid white;
+  line-height: 1;
+}
 .seat.empty-slot { visibility: hidden; pointer-events: none; }
 
 .section {
@@ -819,6 +837,7 @@ header {
       <ul class="action-list">
         <li id="actionSwap">Swap with another student</li>
         <li id="actionBehaviour">📝 Log behaviour…</li>
+        <li id="actionCheckin">📋 Log check-in…</li>
         <li id="actionLate" class="warn">Mark late</li>
         <li id="actionAbsent" class="warn">Mark absent</li>
         <li id="actionClear" class="danger">Clear seat</li>
@@ -1829,6 +1848,7 @@ function renderHeader() {
 function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
+  const now = new Date();   // one timestamp for the whole grid
   for (let r = 1; r <= 7; r++) {
     for (let c = 1; c <= 6; c++) {
       const id = `r${r}c${c}`;
@@ -1845,6 +1865,7 @@ function renderGrid() {
         div.classList.add('filled');
         if (isLate(code)) div.classList.add('late-flag');
         if (isAbsent(code)) div.classList.add('absent-flag');
+        if (isOverdueForCheckin(code, now)) div.classList.add('checkin-due');
         div.textContent = nameByCode(code);
       }
       div.addEventListener('click', () => onSeatTap(id));
@@ -1861,6 +1882,14 @@ function isLate(code) {
 }
 function isAbsent(code) {
   return state.chart.absent.includes(code);
+}
+// Overdue for a check-in: never checked in at all, or last contact was at least
+// settings.overdueDays ago. Same rule that reddens the Check-ins roster meta line.
+// Pass `now` when calling in a loop so the whole grid agrees on one timestamp.
+function isOverdueForCheckin(code, now) {
+  const last = lastCheckin(code);
+  if (!last) return true;
+  return daysBetween(last.date, now || new Date()) >= settings.overdueDays;
 }
 function regularUnseatedCodes() {
   // Not seated, not absent, not late
@@ -3492,6 +3521,8 @@ function openSeatAction(seatId) {
     isLate(code) ? 'Remove late flag' : 'Mark as late';
   document.getElementById('actionAbsent').textContent =
     isAbsent(code) ? 'Remove absent flag' : 'Mark absent';
+  document.getElementById('actionCheckin').textContent =
+    isOverdueForCheckin(code) ? '📋 Log check-in… (overdue)' : '📋 Log check-in…';
   showModal('actionModal');
 }
 
@@ -3873,6 +3904,12 @@ document.getElementById('actionBehaviour').addEventListener('click', () => {
   const code = state.chart.assignments[state.actionSeat];
   hideModal('actionModal');
   if (code != null) openBehaviourQuick(code);
+});
+
+document.getElementById('actionCheckin').addEventListener('click', () => {
+  const code = state.chart.assignments[state.actionSeat];
+  hideModal('actionModal');
+  if (code != null) openCheckinEntry(code);
 });
 
 document.querySelectorAll('.mark-opt').forEach(btn => {
