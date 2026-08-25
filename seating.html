@@ -849,8 +849,7 @@ header {
         <li id="menuDuplicate">Copy chart to today's date</li>
         <li id="menuNew">Start new chart</li>
         <li id="menuLoad">Load saved chart…</li>
-        <li id="menuExport">Export as PNG</li>
-        <li id="menuExportPdf">Export as PDF (landscape page)</li>
+        <li id="menuExportPdf">Export as PDF</li>
         <li id="menuSwitchClass">Switch class</li>
         <li id="menuManageRoster">Manage class & roster…</li>
         <li id="menuLayout">Edit room layout…</li>
@@ -3873,6 +3872,11 @@ document.querySelectorAll('.mark-opt').forEach(btn => {
   });
 });
 
+document.getElementById('menuExportPdf').addEventListener('click', () => {
+  hideModal('menuModal');
+  exportChartPDF();
+});
+
 function renderSavedList() {
   const container = document.getElementById('savedList');
   const saved = loadSaved(state.activeClass);
@@ -3927,176 +3931,27 @@ function renderSavedList() {
   });
 }
 
-// === Export PNG ===
-document.getElementById('menuExport').addEventListener('click', () => {
-  hideModal('menuModal');
-  exportPNG();
-});
-
-document.getElementById('menuExportPdf').addEventListener('click', () => {
-  hideModal('menuModal');
-  exportLandscapePDF();
-});
-
-function exportPNG() {
-  const cell = 130;
-  const pad = 50;
-  const titleH = 110;
-  const labelH = 50;
-  const W = 6 * cell + 2 * pad;
-  const footerH = (state.chart.late.length > 0 || state.chart.absent.length > 0) ? 110 : 50;
-  const H = titleH + labelH + 7 * cell + labelH + footerH;
-  const dpr = 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
-
-  const cls = getClass(state.activeClass);
-  if (!cls) return;
-  ctx.fillStyle = cls.color;
-  ctx.fillRect(0, 0, W, 6);
-
-  ctx.fillStyle = '#1d1d1f';
-  ctx.font = '700 26px -apple-system, system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(cls.label, W / 2, 44);
-  ctx.font = '600 18px -apple-system, system-ui, sans-serif';
-  ctx.fillText(state.chart.name, W / 2, 70);
-  ctx.fillStyle = '#8e8e93';
-  ctx.font = '400 13px -apple-system, system-ui, sans-serif';
-  const seatedN = Object.keys(state.chart.assignments).length;
-  const absN = state.chart.absent.length;
-  const lateN = state.chart.late.length;
-  ctx.fillText(`${fmtTime(state.chart.lastModified)}  ·  ${seatedN} seated, ${lateN} late, ${absN} absent`, W / 2, 92);
-
-  const gridTop = titleH + labelH;
-  ctx.fillStyle = '#8e8e93';
-  ctx.font = '600 14px -apple-system, system-ui, sans-serif';
-  ctx.fillText('BACK', W / 2, titleH + 30);
-  ctx.strokeStyle = '#d1d1d6';
-  ctx.setLineDash([4, 4]);
-  ctx.beginPath();
-  ctx.moveTo(pad, gridTop - 4);
-  ctx.lineTo(W - pad, gridTop - 4);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  for (let r = 1; r <= 7; r++) {
-    for (let c = 1; c <= 6; c++) {
-      const id = `r${r}c${c}`;
-      if (!SEATS.includes(id)) continue;
-      const x = pad + (c - 1) * cell + 6;
-      const y = gridTop + (r - 1) * cell + 6;
-      const w = cell - 12;
-      const h = cell - 12;
-      const code = state.chart.assignments[id];
-      if (code != null) {
-        const away = isAbsent(code);
-        if (away) {
-          // Same read as on screen: an empty-looking desk that still says whose it is.
-          ctx.fillStyle = '#ffffff';
-          roundRect(ctx, x, y, w, h, 10);
-          ctx.fill();
-          ctx.strokeStyle = '#ff3b30';
-          ctx.lineWidth = 2;
-          ctx.setLineDash([6, 4]);
-          roundRect(ctx, x, y, w, h, 10);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = '#b91c1c';
-        } else {
-          ctx.fillStyle = cls.color;
-          roundRect(ctx, x, y, w, h, 10);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-        }
-        wrapText(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 12);
-        // Late / absent marker
-        if (isLate(code) || away) {
-          const dotR = 10;
-          const dotX = x + w - dotR - 4;
-          const dotY = y + dotR + 4;
-          ctx.fillStyle = away ? '#ff3b30' : '#ff9500';
-          ctx.beginPath();
-          ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '700 11px -apple-system, system-ui, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(away ? 'A' : 'L', dotX, dotY + 0.5);
-        }
-      } else {
-        ctx.fillStyle = '#fafafa';
-        ctx.strokeStyle = '#c7c7cc';
-        ctx.lineWidth = 1.5;
-        roundRect(ctx, x, y, w, h, 10);
-        ctx.fill();
-        ctx.stroke();
-      }
-    }
-  }
-
-  const frontY = gridTop + 7 * cell + 16;
-  ctx.strokeStyle = '#1d1d1f';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(pad, frontY - 8);
-  ctx.lineTo(W - pad, frontY - 8);
-  ctx.stroke();
-  ctx.fillStyle = '#1d1d1f';
-  ctx.font = '700 14px -apple-system, system-ui, sans-serif';
-  ctx.fillText('FRONT (you)', W / 2, frontY + 14);
-
-  let lineY = frontY + 48;
-  ctx.font = '600 13px -apple-system, system-ui, sans-serif';
-  if (state.chart.late.length > 0) {
-    ctx.fillStyle = '#b35900';
-    const names = state.chart.late.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b)).join(', ');
-    ctx.fillText('Late (L): ' + names, W / 2, lineY);
-    lineY += 22;
-  }
-  if (state.chart.absent.length > 0) {
-    ctx.fillStyle = '#b91c1c';
-    const names = state.chart.absent.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b)).join(', ');
-    ctx.fillText('Absent (A): ' + names, W / 2, lineY);
-  }
-
-  canvas.toBlob((blob) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const safe = (cls.label + ' ' + state.chart.name).replace(/[^a-z0-9-_ ]/gi, '_');
-    a.download = safe + '.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 500);
-  });
-}
-
-// === Export landscape PDF ===
+// === Export PDF ===
 //
-// One full landscape Letter page: the chart is drawn to a canvas at print resolution,
-// then wrapped in a hand-rolled PDF. No library is pulled in because the document is a
-// single image, which makes it a fixed five-object skeleton whose only fiddly part is
-// byte-accurate xref offsets.
+// One full portrait Letter page, drawn to a canvas at print resolution and wrapped in
+// a hand-rolled PDF. No library is pulled in because the document is a single image,
+// which makes it a fixed five-object skeleton whose only fiddly part is byte-accurate
+// xref offsets.
 //
-// A 6-wide by 7-deep room is taller than it is wide, so on landscape paper the grid is
-// limited by page height rather than width. The width left over carries the late and
-// absent lists in a side panel instead of sitting there as dead margin.
-const PDF_PAGE_W = 792, PDF_PAGE_H = 612;   // Letter landscape, in points
+// Deliberately black, white and grey only: this is made to be printed, and on a mono
+// laser printer the class colour would come out as an indeterminate grey anyway. So
+// state is carried by shape instead of hue -- a solid border is a present student, a
+// dashed border is an absent one, a grey-filled desk is empty, and the L / A badges
+// are black discs. Portrait suits a 6-wide by 7-deep room: the grid is limited by
+// width rather than height, which makes the desks noticeably larger than landscape.
+const PDF_PAGE_W = 612, PDF_PAGE_H = 792;   // Letter portrait, in points
 const PDF_PX = 2.75;                        // canvas pixels per point (~198 DPI)
+const PDF_INK = '#1d1d1d';                  // near-black: text, present desks, badges
+const PDF_MID = '#6b6b6b';                  // secondary text, absent names
+const PDF_LINE = '#c7c7c7';                 // empty-desk outline
+const PDF_PALE = '#f2f2f2';                 // empty-desk fill
 
-function renderLandscapeCanvas() {
+function renderChartCanvas() {
   const cls = getClass(state.activeClass);
   if (!cls) return null;
   const canvas = document.createElement('canvas');
@@ -4109,14 +3964,12 @@ function renderLandscapeCanvas() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, PDF_PAGE_W, PDF_PAGE_H);
 
-  const M = 30, panelW = 190, gap = 22;
+  const M = 36;
 
   // --- Header ---
-  ctx.fillStyle = cls.color;
-  ctx.fillRect(0, 0, PDF_PAGE_W, 8);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#1d1d1f';
+  ctx.fillStyle = PDF_INK;
   ctx.font = font(700, 24);
   ctx.fillText(cls.label, M, 44);
   ctx.font = font(600, 15);
@@ -4126,26 +3979,30 @@ function renderLandscapeCanvas() {
   const lateN = state.chart.late.length;
   const absN = state.chart.absent.length;
   ctx.textAlign = 'right';
-  ctx.fillStyle = '#8e8e93';
-  ctx.font = font(400, 11);
+  ctx.fillStyle = PDF_MID;
+  ctx.font = font(400, 10);
   ctx.fillText(fmtTime(state.chart.lastModified), PDF_PAGE_W - M, 44);
   ctx.fillText(seatedN + ' seated  ·  ' + lateN + ' late  ·  ' + absN + ' absent', PDF_PAGE_W - M, 62);
 
-  // --- Grid: as large as the page height allows, centred in whatever width is left
-  // once the side panel is reserved. ---
-  const areaX = M;
-  const areaW = PDF_PAGE_W - M * 2 - panelW - gap;
-  const top = 100, bottom = PDF_PAGE_H - M - 24;
+  ctx.strokeStyle = PDF_INK;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(M, 82); ctx.lineTo(PDF_PAGE_W - M, 82);
+  ctx.stroke();
+
+  // --- Grid: fills the full width now that nothing sits beside it ---
+  const areaW = PDF_PAGE_W - M * 2;
+  const top = 108, bottom = PDF_PAGE_H - M - 26;
   const cell = Math.min(areaW / COLS, (bottom - top) / ROWS);
   const gw = cell * COLS, gh = cell * ROWS;
-  const gx = areaX + (areaW - gw) / 2;
+  const gx = M + (areaW - gw) / 2;
   const gy = top + ((bottom - top) - gh) / 2;
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#8e8e93';
+  ctx.fillStyle = PDF_MID;
   ctx.font = font(600, 11);
-  ctx.fillText('BACK', gx + gw / 2, gy - 10);
-  ctx.strokeStyle = '#d1d1d6';
+  ctx.fillText('BACK', gx + gw / 2, gy - 11);
+  ctx.strokeStyle = PDF_LINE;
   ctx.lineWidth = 1;
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
@@ -4157,101 +4014,64 @@ function renderLandscapeCanvas() {
     for (let c = 1; c <= COLS; c++) {
       const id = 'r' + r + 'c' + c;
       if (!SEATS.includes(id)) continue;
-      const x = gx + (c - 1) * cell + 2.5;
-      const y = gy + (r - 1) * cell + 2.5;
-      const w = cell - 5, h = cell - 5;
+      const x = gx + (c - 1) * cell + 3;
+      const y = gy + (r - 1) * cell + 3;
+      const w = cell - 6, h = cell - 6;
       const code = state.chart.assignments[id];
       if (code == null) {
-        ctx.fillStyle = '#fafafa';
-        ctx.strokeStyle = '#c7c7cc';
-        ctx.lineWidth = 1;
-        roundRect(ctx, x, y, w, h, 5);
+        // Empty desk: the only filled shape on the page, so it reads as "nobody here"
+        // without needing a label.
+        ctx.fillStyle = PDF_PALE;
+        roundRect(ctx, x, y, w, h, 6);
         ctx.fill();
+        ctx.strokeStyle = PDF_LINE;
+        ctx.lineWidth = 1;
+        roundRect(ctx, x, y, w, h, 6);
         ctx.stroke();
         continue;
       }
       const away = isAbsent(code);
-      if (away) {
-        ctx.fillStyle = '#ffffff';
-        roundRect(ctx, x, y, w, h, 5);
-        ctx.fill();
-        ctx.strokeStyle = '#ff3b30';
-        ctx.lineWidth = 1.4;
-        ctx.setLineDash([4, 3]);
-        roundRect(ctx, x, y, w, h, 5);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = '#b91c1c';
-      } else {
-        ctx.fillStyle = cls.color;
-        roundRect(ctx, x, y, w, h, 5);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-      }
+      ctx.fillStyle = '#ffffff';
+      roundRect(ctx, x, y, w, h, 6);
+      ctx.fill();
+      ctx.strokeStyle = PDF_INK;
+      ctx.lineWidth = away ? 1.2 : 1.6;
+      if (away) ctx.setLineDash([5, 3]);
+      roundRect(ctx, x, y, w, h, 6);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = away ? PDF_MID : PDF_INK;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      fitDeskLabel(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 7);
+      fitDeskLabel(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 10);
       if (away || isLate(code)) {
-        drawBadge(ctx, x + w - 8, y + 8, 6, away ? '#ff3b30' : '#ff9500', away ? 'A' : 'L');
+        drawBadge(ctx, x + w - 11, y + 11, 8, away ? 'A' : 'L');
       }
     }
   }
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.strokeStyle = '#1d1d1f';
-  ctx.lineWidth = 1.6;
+  ctx.strokeStyle = PDF_INK;
+  ctx.lineWidth = 1.8;
   ctx.beginPath();
-  ctx.moveTo(gx, gy + gh + 9); ctx.lineTo(gx + gw, gy + gh + 9);
+  ctx.moveTo(gx, gy + gh + 10); ctx.lineTo(gx + gw, gy + gh + 10);
   ctx.stroke();
-  ctx.fillStyle = '#1d1d1f';
+  ctx.fillStyle = PDF_INK;
   ctx.font = font(700, 11);
-  ctx.fillText('FRONT (you)', gx + gw / 2, gy + gh + 24);
-
-  // --- Side panel: the quick who-isn't-here reference ---
-  const namesOf = codes => codes.map(c => nameByCode(c)).sort((a, b) => a.localeCompare(b));
-  const panelX = PDF_PAGE_W - M - panelW;
-  let py = 104;
-  py = panelSection(ctx, font, panelX, panelW, py, 'LATE (L)', '#b35900', namesOf(state.chart.late));
-  panelSection(ctx, font, panelX, panelW, py, 'ABSENT (A)', '#b91c1c', namesOf(state.chart.absent));
+  ctx.fillText('FRONT (you)', gx + gw / 2, gy + gh + 26);
 
   return canvas;
 }
 
-function panelSection(ctx, font, x, w, y, title, color, names) {
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#8e8e93';
-  ctx.font = font(700, 9);
-  ctx.fillText(title, x, y);
-  ctx.strokeStyle = '#e5e5ea';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(x, y + 6); ctx.lineTo(x + w, y + 6);
-  ctx.stroke();
-  y += 20;
-  ctx.font = font(400, 10);
-  if (names.length === 0) {
-    ctx.fillStyle = '#c7c7cc';
-    ctx.fillText('None', x, y);
-    return y + 26;
-  }
-  ctx.fillStyle = color;
-  for (const n of names) {
-    if (y > PDF_PAGE_H - 34) { ctx.fillText('...', x, y); break; }
-    ctx.fillText(n, x, y);
-    y += 13;
-  }
-  return y + 16;
-}
-
-// Shrink a name to fit its desk; if it still will not fit, break it at the space
-// nearest the middle rather than shrinking it into illegibility.
+// Shrink a name to fit its desk; if it still will not fit, break it into two lines at
+// the space nearest the middle rather than shrinking it into illegibility.
 function fitDeskLabel(ctx, text, cx, cy, maxW) {
   const font = size => '600 ' + size + 'px -apple-system, system-ui, sans-serif';
-  let size = 10;
+  let size = 14;
   ctx.font = font(size);
-  while (ctx.measureText(text).width > maxW && size > 7) {
+  while (ctx.measureText(text).width > maxW && size > 9) {
     size -= 0.5;
     ctx.font = font(size);
   }
@@ -4263,9 +4083,9 @@ function fitDeskLabel(ctx, text, cx, cy, maxW) {
   let at = spaces[0];
   spaces.forEach(i => { if (Math.abs(i - target) < Math.abs(at - target)) at = i; });
   const a = text.slice(0, at), b = text.slice(at + 1);
-  size = 9;
+  size = 12;
   ctx.font = font(size);
-  while (Math.max(ctx.measureText(a).width, ctx.measureText(b).width) > maxW && size > 6) {
+  while (Math.max(ctx.measureText(a).width, ctx.measureText(b).width) > maxW && size > 8) {
     size -= 0.5;
     ctx.font = font(size);
   }
@@ -4273,13 +4093,15 @@ function fitDeskLabel(ctx, text, cx, cy, maxW) {
   ctx.fillText(b, cx, cy + size * 0.55);
 }
 
-function drawBadge(ctx, x, y, r, bg, ch) {
-  ctx.fillStyle = bg;
+// Black disc, white ring, white letter -- legible on a mono printer and distinct from
+// the desk outline it sits on.
+function drawBadge(ctx, x, y, r, ch) {
+  ctx.fillStyle = PDF_INK;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.4;
   ctx.stroke();
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 ' + (r * 1.25) + 'px -apple-system, system-ui, sans-serif';
@@ -4335,9 +4157,9 @@ function buildImagePdf(jpeg, imgW, imgH, pageW, pageH) {
   return new Blob([out], { type: 'application/pdf' });
 }
 
-function exportLandscapePDF() {
+function exportChartPDF() {
   const cls = getClass(state.activeClass);
-  const canvas = renderLandscapeCanvas();
+  const canvas = renderChartCanvas();
   if (!cls || !canvas) return;
   canvas.toBlob((jpegBlob) => {
     if (!jpegBlob) { toast('Could not build the PDF'); return; }
@@ -4354,7 +4176,7 @@ function exportLandscapePDF() {
       setTimeout(() => URL.revokeObjectURL(url), 500);
       toast('PDF downloaded');
     });
-  }, 'image/jpeg', 0.92);
+  }, 'image/jpeg', 0.95);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -4369,18 +4191,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
-}
-
-function wrapText(ctx, text, cx, cy, maxW) {
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  let size = 15;
-  ctx.font = `600 ${size}px -apple-system, system-ui, sans-serif`;
-  while (ctx.measureText(text).width > maxW && size > 10) {
-    size--;
-    ctx.font = `600 ${size}px -apple-system, system-ui, sans-serif`;
-  }
-  ctx.fillText(text, cx, cy);
 }
 
 initApp();
