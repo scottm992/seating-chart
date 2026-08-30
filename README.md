@@ -163,7 +163,12 @@ See `duplicate` handler on `#menuDuplicate`, plus `datedCopyName(name, saved)` a
 
 ### PDF export
 
-Menu -> **Export as PDF** produces one full portrait Letter page (612 x 792 pt) as a real `.pdf` download -- for printing, clipping to a board, or handing to a substitute teacher. It is the only export; there is no PNG option. Filename format: `<class label> <chart name>.pdf`.
+Two exports, both one full portrait Letter page (612 x 792 pt) as a real `.pdf` download. There is no PNG option.
+
+- Menu -> **Export as PDF (my view)** -- the teacher's sheet, for printing, clipping to a board, or handing to a substitute. `<class label> <chart name>.pdf`
+- Menu -> **Export as PDF (student view)** -- the same chart rotated for the class to read off the projector. `<class label> <chart name> student view.pdf`
+
+Both come from `renderChartCanvas(opts)`; `opts.studentView` is the only difference.
 
 **No PDF library.** The document is a single image, so the file is a fixed five-object skeleton written by hand in `buildImagePdf()`: catalog, pages, page, a `DCTDecode` (JPEG) XObject, and a content stream that paints it across the whole MediaBox. The only delicate part is the xref table, whose entries must be exactly 20 bytes each and must hold byte-accurate offsets to every object -- hence the running byte count in `put()` rather than string concatenation.
 
@@ -178,7 +183,23 @@ Menu -> **Export as PDF** produces one full portrait Letter page (612 x 792 pt) 
 
 **The page is drawn, not scaled.** `renderChartCanvas()` renders at 2.75 canvas pixels per point (~198 DPI, a 1683 x 2178 canvas) with all drawing done in points. Portrait suits a 6-wide by 7-deep room: the grid is limited by **width** rather than height, so desks come out ~89 pt (1.23 in) square -- about a third larger than the same room on landscape paper. There is no side panel; the grid uses the full width, and the header carries class label and chart name at top left with the timestamp and status counts right-aligned above a rule.
 
-Desk labels use `fitDeskLabel()`, which shrinks a name from 14 pt down to 9 pt to fit, and only if it still will not fit breaks it into two lines at the space nearest the middle (12 pt down to 8 pt). With the `First L.` naming convention essentially every name renders at the full 14 pt on one line.
+Desk labels use `fitDeskLabel(ctx, text, cx, cy, maxW, start)`. It shrinks from `start` down to **9 pt** on one line, and only if it still will not fit breaks the name into two lines at the space nearest the middle, shrinking from `start - 2` down to **6 pt**. Those two floors are absolute, not scaled from `start`: 9 pt is the point where a second line beats a smaller single line, and the two-line floor has to reach low enough that even a pathological name is contained rather than spilling across its desk. With the `First L.` naming convention essentially every name renders at full size on one line.
+
+### Student view
+
+The student sheet is the same chart rotated **180 degrees** -- rows reversed *and* columns reversed. That is exactly the "turn the paper around to show the class" transform, and it is what makes the sheet readable off a projector: a student facing the screen sees a map aligned with the direction they are looking. Concretely, a desk at the teacher's front-left is at the students' front-right, and the front of the room moves to the top of the page:
+
+```
+teacher (r, c)  ->  student (ROWS + 1 - r, COLS + 1 - c)
+```
+
+Only reversing columns (a plain mirror) would be **wrong**: it would leave the front of the room at the bottom, so the map would point backwards relative to the way the class is facing.
+
+Three things change besides the rotation:
+
+- **Edge labels swap.** `FRONT OF ROOM (screen)` sits at the top with the heavy solid rule, `BACK OF ROOM` at the bottom with the dashed one. Whichever end is the front gets the bold label and the solid rule, handled by the shared `edge()` helper.
+- **Every status marker is dropped** -- no `L`, no `A`, no absent dashed border, and no seated/late/absent counts in the header. The sheet is projected to the whole room, and who is late or absent is not the class's business; nor does any of it help someone find a desk. The header instead reads `STUDENT VIEW / the room as you see it`.
+- **Names start at 18 pt** rather than 14 pt, since this one is read from across the room.
 
 ## State machine summary
 

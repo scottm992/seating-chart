@@ -873,7 +873,8 @@ header {
         <li id="menuDuplicate">Copy chart to today's date</li>
         <li id="menuNew">Start new chart</li>
         <li id="menuLoad">Load saved chart…</li>
-        <li id="menuExportPdf">Export as PDF</li>
+        <li id="menuExportPdf">Export as PDF (my view)</li>
+        <li id="menuExportPdfStudent">Export as PDF (student view)</li>
         <li id="menuSwitchClass">Switch class</li>
         <li id="menuManageRoster">Manage class & roster…</li>
         <li id="menuLayout">Edit room layout…</li>
@@ -3932,6 +3933,11 @@ document.getElementById('menuExportPdf').addEventListener('click', () => {
   exportChartPDF();
 });
 
+document.getElementById('menuExportPdfStudent').addEventListener('click', () => {
+  hideModal('menuModal');
+  exportChartPDF({ studentView: true });
+});
+
 function renderSavedList() {
   const container = document.getElementById('savedList');
   const saved = loadSaved(state.activeClass);
@@ -4006,7 +4012,19 @@ const PDF_MID = '#6b6b6b';                  // secondary text, absent names
 const PDF_LINE = '#c7c7c7';                 // empty-desk outline
 const PDF_PALE = '#f2f2f2';                 // empty-desk fill
 
-function renderChartCanvas() {
+// Draw the chart onto a print-resolution canvas.
+//
+// opts.studentView rotates the room 180 degrees -- rows reversed AND columns reversed
+// -- which is exactly the "turn the paper around to show the class" transform. A desk
+// at the teacher's front-left lands at the students' front-right, and the front of the
+// room moves to the top of the page, so a student facing the screen reads the map
+// aligned with the direction they are looking. The student sheet also drops every
+// status marker: it is projected to the whole room, and who is late or absent or
+// overdue for a check-in is not the class's business, nor does it help anyone find a
+// desk.
+function renderChartCanvas(opts) {
+  const o = opts || {};
+  const studentView = !!o.studentView;
   const cls = getClass(state.activeClass);
   if (!cls) return null;
   const canvas = document.createElement('canvas');
@@ -4030,14 +4048,21 @@ function renderChartCanvas() {
   ctx.font = font(600, 15);
   ctx.fillText(state.chart.name, M, 66);
 
-  const seatedN = Object.keys(state.chart.assignments).length;
-  const lateN = state.chart.late.length;
-  const absN = state.chart.absent.length;
   ctx.textAlign = 'right';
   ctx.fillStyle = PDF_MID;
-  ctx.font = font(400, 10);
-  ctx.fillText(fmtTime(state.chart.lastModified), PDF_PAGE_W - M, 44);
-  ctx.fillText(seatedN + ' seated  ·  ' + lateN + ' late  ·  ' + absN + ' absent', PDF_PAGE_W - M, 62);
+  if (studentView) {
+    ctx.font = font(700, 12);
+    ctx.fillText('STUDENT VIEW', PDF_PAGE_W - M, 44);
+    ctx.font = font(400, 11);
+    ctx.fillText('the room as you see it', PDF_PAGE_W - M, 62);
+  } else {
+    const seatedN = Object.keys(state.chart.assignments).length;
+    const lateN = state.chart.late.length;
+    const absN = state.chart.absent.length;
+    ctx.font = font(400, 10);
+    ctx.fillText(fmtTime(state.chart.lastModified), PDF_PAGE_W - M, 44);
+    ctx.fillText(seatedN + ' seated  ·  ' + lateN + ' late  ·  ' + absN + ' absent', PDF_PAGE_W - M, 62);
+  }
 
   ctx.strokeStyle = PDF_INK;
   ctx.lineWidth = 1.5;
@@ -4053,24 +4078,37 @@ function renderChartCanvas() {
   const gx = M + (areaW - gw) / 2;
   const gy = top + ((bottom - top) - gh) / 2;
 
-  ctx.textAlign = 'center';
-  ctx.fillStyle = PDF_MID;
-  ctx.font = font(600, 11);
-  ctx.fillText('BACK', gx + gw / 2, gy - 11);
-  ctx.strokeStyle = PDF_LINE;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
-  ctx.beginPath();
-  ctx.moveTo(gx, gy - 5); ctx.lineTo(gx + gw, gy - 5);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  // The front of the room is at the bottom for the teacher and at the top for the
+  // students. Whichever end it is, it gets the heavy solid rule and the bold label.
+  const frontOnTop = studentView;
+  const edge = (yLine, yText, label, isFront) => {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.strokeStyle = isFront ? PDF_INK : PDF_LINE;
+    ctx.lineWidth = isFront ? 1.8 : 1;
+    if (!isFront) ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(gx, yLine); ctx.lineTo(gx + gw, yLine);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = isFront ? PDF_INK : PDF_MID;
+    ctx.font = font(isFront ? 700 : 600, 11);
+    ctx.fillText(label, gx + gw / 2, yText);
+  };
+  edge(gy - 5, gy - 11,
+       studentView ? 'FRONT OF ROOM (screen)' : 'BACK',
+       frontOnTop);
 
+  const nameSize = studentView ? 18 : 14;   // student sheet is read from across the room
   for (let r = 1; r <= ROWS; r++) {
     for (let c = 1; c <= COLS; c++) {
       const id = 'r' + r + 'c' + c;
       if (!SEATS.includes(id)) continue;
-      const x = gx + (c - 1) * cell + 3;
-      const y = gy + (r - 1) * cell + 3;
+      // 180-degree rotation for the student sheet.
+      const dr = studentView ? (ROWS + 1 - r) : r;
+      const dc = studentView ? (COLS + 1 - c) : c;
+      const x = gx + (dc - 1) * cell + 3;
+      const y = gy + (dr - 1) * cell + 3;
       const w = cell - 6, h = cell - 6;
       const code = state.chart.assignments[id];
       if (code == null) {
@@ -4085,7 +4123,8 @@ function renderChartCanvas() {
         ctx.stroke();
         continue;
       }
-      const away = isAbsent(code);
+      // Absent styling and the L / A badges are teacher-sheet only.
+      const away = !studentView && isAbsent(code);
       ctx.fillStyle = '#ffffff';
       roundRect(ctx, x, y, w, h, 6);
       ctx.fill();
@@ -4099,34 +4138,32 @@ function renderChartCanvas() {
       ctx.fillStyle = away ? PDF_MID : PDF_INK;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      fitDeskLabel(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 10);
-      if (away || isLate(code)) {
+      fitDeskLabel(ctx, nameByCode(code), x + w / 2, y + h / 2, w - 10, nameSize);
+      if (!studentView && (away || isLate(code))) {
         drawBadge(ctx, x + w - 11, y + 11, 8, away ? 'A' : 'L');
       }
     }
   }
 
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.strokeStyle = PDF_INK;
-  ctx.lineWidth = 1.8;
-  ctx.beginPath();
-  ctx.moveTo(gx, gy + gh + 10); ctx.lineTo(gx + gw, gy + gh + 10);
-  ctx.stroke();
-  ctx.fillStyle = PDF_INK;
-  ctx.font = font(700, 11);
-  ctx.fillText('FRONT (you)', gx + gw / 2, gy + gh + 26);
+  edge(gy + gh + 10, gy + gh + 26,
+       studentView ? 'BACK OF ROOM' : 'FRONT (you)',
+       !frontOnTop);
 
   return canvas;
 }
 
 // Shrink a name to fit its desk; if it still will not fit, break it into two lines at
-// the space nearest the middle rather than shrinking it into illegibility.
-function fitDeskLabel(ctx, text, cx, cy, maxW) {
+// the space nearest the middle rather than shrinking it into illegibility. `start` is
+// the ideal size. The floors are absolute rather than proportional to it: below ~9px
+// a second line beats a smaller single line, and the two-line floor has to go low
+// enough that even a very long name is contained rather than spilling over the desk.
+function fitDeskLabel(ctx, text, cx, cy, maxW, start) {
   const font = size => '600 ' + size + 'px -apple-system, system-ui, sans-serif';
-  let size = 14;
+  const top = start || 14;
+  const floor1 = 9;
+  let size = top;
   ctx.font = font(size);
-  while (ctx.measureText(text).width > maxW && size > 9) {
+  while (ctx.measureText(text).width > maxW && size > floor1) {
     size -= 0.5;
     ctx.font = font(size);
   }
@@ -4138,9 +4175,10 @@ function fitDeskLabel(ctx, text, cx, cy, maxW) {
   let at = spaces[0];
   spaces.forEach(i => { if (Math.abs(i - target) < Math.abs(at - target)) at = i; });
   const a = text.slice(0, at), b = text.slice(at + 1);
-  size = 12;
+  const floor2 = 6;
+  size = top - 2;
   ctx.font = font(size);
-  while (Math.max(ctx.measureText(a).width, ctx.measureText(b).width) > maxW && size > 8) {
+  while (Math.max(ctx.measureText(a).width, ctx.measureText(b).width) > maxW && size > floor2) {
     size -= 0.5;
     ctx.font = font(size);
   }
@@ -4212,9 +4250,10 @@ function buildImagePdf(jpeg, imgW, imgH, pageW, pageH) {
   return new Blob([out], { type: 'application/pdf' });
 }
 
-function exportChartPDF() {
+function exportChartPDF(opts) {
+  const o = opts || {};
   const cls = getClass(state.activeClass);
-  const canvas = renderChartCanvas();
+  const canvas = renderChartCanvas(o);
   if (!cls || !canvas) return;
   canvas.toBlob((jpegBlob) => {
     if (!jpegBlob) { toast('Could not build the PDF'); return; }
@@ -4223,7 +4262,8 @@ function exportChartPDF() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const safe = (cls.label + ' ' + state.chart.name).replace(/[^a-z0-9-_ ]/gi, '_');
+      const suffix = o.studentView ? ' student view' : '';
+      const safe = (cls.label + ' ' + state.chart.name + suffix).replace(/[^a-z0-9-_ ]/gi, '_');
       a.download = safe + '.pdf';
       document.body.appendChild(a);
       a.click();
